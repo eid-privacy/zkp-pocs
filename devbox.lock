@@ -1,0 +1,154 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "cargo-nextest@latest": {
+      "last_modified": "2025-11-25T14:41:04Z",
+      "resolved": "github:NixOS/nixpkgs/dc205f7b4fdb04c8b7877b43edb7b73be7730081#cargo-nextest",
+      "source": "devbox-search",
+      "version": "0.9.114",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/xq51fbjkz9wnnc9ns52nmf7j7b791iqv-cargo-nextest-0.9.114",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/xq51fbjkz9wnnc9ns52nmf7j7b791iqv-cargo-nextest-0.9.114"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/5k1gkiibiygxr08rbhdr48f0qwafxzap-cargo-nextest-0.9.114",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/5k1gkiibiygxr08rbhdr48f0qwafxzap-cargo-nextest-0.9.114"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/lml5dkj93sbi9452jg16qqfqbd6iwxnb-cargo-nextest-0.9.114",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/lml5dkj93sbi9452jg16qqfqbd6iwxnb-cargo-nextest-0.9.114"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/z2l7mvxaxmlahk5mrqn0n72sfjs9lmlk-cargo-nextest-0.9.114",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/z2l7mvxaxmlahk5mrqn0n72sfjs9lmlk-cargo-nextest-0.9.114"
+        }
+      }
+    },
+    "github:NixOS/nixpkgs/nixpkgs-unstable": {
+      "last_modified": "2025-12-15T04:22:15Z",
+      "resolved": "github:NixOS/nixpkgs/09b8fda8959d761445f12b55f380d90375a1d6bb?lastModified=1765772535&narHash=sha256-aq%2BdQoaPONOSjtFIBnAXseDm9TUhIbe215TPmkfMYww%3D"
+    },
+    "jupyter@latest": {
+      "last_modified": "2025-12-09T08:49:39Z",
+      "resolved": "github:NixOS/nixpkgs/677fbe97984e7af3175b6c121f3c39ee5c8d62c9#jupyter",
+      "source": "devbox-search",
+      "version": "3.13.9-env",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/g8gj142y0gvzk8i1c0394wkxy9rz5p80-python3-3.13.9-env",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/g8gj142y0gvzk8i1c0394wkxy9rz5p80-python3-3.13.9-env"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/jpl038pdnpb5h7bq491csw55z1ww122h-python3-3.13.9-env",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/jpl038pdnpb5h7bq491csw55z1ww122h-python3-3.13.9-env"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/8xqvxd0iym0nqbvwf873y0fz3ycqyr8f-python3-3.13.9-env",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/8xqvxd0iym0nqbvwf873y0fz3ycqyr8f-python3-3.13.9-env"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/7319haq8c8s0dzscndh9x8b88qcdpn7n-python3-3.13.9-env",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/7319haq8c8s0dzscndh9x8b88qcdpn7n-python3-3.13.9-env"
+        }
+      }
+    },
+    "rustup@latest": {
+      "last_modified": "2025-11-23T21:50:36Z",
+      "plugin_version": "0.0.1",
+      "resolved": "github:NixOS/nixpkgs/ee09932cedcef15aaf476f9343d1dea2cb77e261#rustup",
+      "source": "devbox-search",
+      "version": "1.28.2",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/p7y6g5vv8b81s0l00m70c0r1jkfkcqb9-rustup-1.28.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/p7y6g5vv8b81s0l00m70c0r1jkfkcqb9-rustup-1.28.2"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/w936bvf1yxjf357y35laaw5w2qbarhay-rustup-1.28.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/w936bvf1yxjf357y35laaw5w2qbarhay-rustup-1.28.2"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/29kq1qxzdwkjjaim796nrsb32gagwiim-rustup-1.28.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/29kq1qxzdwkjjaim796nrsb32gagwiim-rustup-1.28.2"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/w8yihglsjnym11kbsc4yv1k7mq5m7vlj-rustup-1.28.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/w8yihglsjnym11kbsc4yv1k7mq5m7vlj-rustup-1.28.2"
+        }
+      }
+    }
+  }
+}

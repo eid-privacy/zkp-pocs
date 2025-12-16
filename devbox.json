@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
+  "packages": [
+    "jupyter@latest",
+    "rustup@latest",
+    "cargo-nextest@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo Ensuring npm and python packages are installed",
+      "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi",
+      "test -x $HOME/.cargo/bin/evcxr_jupyter || (cargo install --locked evcxr_jupyter && evcxr_jupyter --install)"
+    ],
+    "scripts": {
+      "jupyter": [
+        "jupyter-lab -y"
+      ],
+      "jupyter-docker": [
+        "cd how; jupyter-lab -y --ip=0"
+      ],
+      "clean": [
+        "jupyter nbconvert --clear-output --inplace *.ipynb solutions/*.ipynb"
+      ],
+      "docs": [
+        "( cd ecdsa_proof; cargo doc -p ecdsa_proof --no-deps )",
+        "rm -rf docs; cp -a ecdsa_proof/target/doc/ docs; cp index.redirect.html docs/index.html "
+      ]
+    }
+  },
+  "env": {
+    "PATH": "$PATH:$HOME/.cargo/bin"
+  }
+}
