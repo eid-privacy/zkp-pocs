@@ -5,12 +5,13 @@ Once you installed [devbox](https://www.jetify.com/docs/devbox/installing-devbox
 you can run the experiment with the following command:
 
 ```bash
-devbox run experiment
+devbox run noir-all
 ```
 
-It will output the time and size of the proof created.
+It will output the time and size of the proofs created in the file
+`stats.csv`.
 
-## Formats used
+# Formats used
 
 For this first PoC, we chose the following formats:
 
@@ -19,7 +20,51 @@ size, but can be 0-padded
 - Signatures: both the issuer and the device signature are done using
 ECDSA over P-256
 
-## ZKP Inputs
+# Inputs and Proofs created
+
+## WP3 - Holder Binding
+
+The `main` function of our ZKP has the following inputs:
+
+- Secret (only known to the holder, as they would make the presentation linkable):
+  - `credential` string
+  - `SE signature` over the verifier challenge
+- Public (known to the holder and the verifier):
+  - `challenge_hash` from the verifier
+- Calculated in the circuit
+  - `public key` from the `credential`
+- Proof
+  - the `SE signature` can be verified using the `public key` to match the `challenge_hash`
+
+## WP4 - Issuer Signature
+
+The `main` function of our ZKP has the following inputs:
+
+- Secret (only known to the holder, as they would make the presentation linkable):
+  - `credential` string
+  - `issuer signature` over the credential
+- Public (known to the holder and the verifier):
+  - `public key` of the issuer
+- Calculated in the circuit
+  - `credential_hash` as a sha256 of the credential
+- Proof
+  - the `issuer signature` can be verified with the `public key` and the `credential_hash`
+
+## WP5 - Age Verification
+
+We chose to prove the favorite predicates of all: age verification.
+The `main` function of our ZKP has the following inputs:
+
+- Secret (only known to the holder, as they would make the presentation linkable):
+  - `credential` string
+- Public (known to the holder and the verifier):
+  - `current date`
+- Calculated in the circuit
+  - `date of birth` from the `credential`
+- Proof
+  - the `date of birth` is 18 years or more before the `current date`
+
+## WP6 - Non-Revocation
 
 The `main` function of our ZKP has the following inputs:
 

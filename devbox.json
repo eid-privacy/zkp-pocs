@@ -17,10 +17,9 @@
       "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi"
     ],
     "scripts": {
-      "dock-all":        "cd docknetwork && cargo nextest run",
-      "noir-all":        "cd noir && make all",
-      "noir-experiment": "cd noir && make all",
-      "noir-clean":      "cd noir && make clean"
+      "dock-all": "cd docknetwork && cargo nextest run",
+      "noir-all": "cd noir && make all",
+      "noir-clean": "cd noir && make clean"
     }
   },
   "env": {
