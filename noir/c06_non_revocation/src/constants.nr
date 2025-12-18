@@ -1,0 +1,1 @@
+pub global REVOCATION_LIST_IDS: u32 = 1024;

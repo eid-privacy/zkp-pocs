@@ -1,30 +1,26 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
   "packages": [
-    "jupyter@latest",
+    "python@3.11",
+    "python311Packages.pip",
+    "github:eid-privacy/flakes#noir-versions.v1_0_0-beta_13",
+    "github:eid-privacy/flakes#barretenberg-versions.v1_2_1",
+    "time@latest",
     "rustup@latest",
     "cargo-nextest@latest"
   ],
   "shell": {
     "init_hook": [
+      ". $VENV_DIR/bin/activate",
+      "pip install -r noir/requirements.txt",
       "echo Ensuring npm and python packages are installed",
-      "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi",
-      "test -x $HOME/.cargo/bin/evcxr_jupyter || (cargo install --locked evcxr_jupyter && evcxr_jupyter --install)"
+      "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi"
     ],
     "scripts": {
-      "jupyter": [
-        "jupyter-lab -y"
-      ],
-      "jupyter-docker": [
-        "cd how; jupyter-lab -y --ip=0"
-      ],
-      "clean": [
-        "jupyter nbconvert --clear-output --inplace *.ipynb solutions/*.ipynb"
-      ],
-      "docs": [
-        "( cd ecdsa_proof; cargo doc -p ecdsa_proof --no-deps )",
-        "rm -rf docs; cp -a ecdsa_proof/target/doc/ docs; cp index.redirect.html docs/index.html "
-      ]
+      "dock-all": "cd docknetwork && cargo nextest run",
+      "noir-all": "cd noir && make all",
+      "noir-experiment": "cd noir && make all",
+      "noir-clean": "cd noir && make clean"
     }
   },
   "env": {

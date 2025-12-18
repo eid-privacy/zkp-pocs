@@ -44,6 +44,7 @@ use bbs_plus::{
 };
 use blake2::Blake2b512;
 use bulletproofs_plus_plus::prelude::SetupParams as BppSetupParams;
+use chrono::TimeZone;
 use dock_crypto_utils::{
     commitment::PedersenCommitmentKey,
     signature::MessageOrBlinding,
@@ -135,6 +136,8 @@ pub struct VerifiedCredential {
     signature: SignatureG1<Bls12_381>,
     /// Contents of the messages which hold strings
     message_strings: BTreeMap<usize, String>,
+    /// Contents of the messages which hold u64
+    message_u64: BTreeMap<usize, u64>,
 }
 
 /// The [SecureElement] is a specially hardened part of the [MobilePhone] which can create
@@ -271,15 +274,22 @@ impl Issuer {
         let pk_y = from_base_field_to_scalar_field::<Fq, BlsFr>(key_pub.y().unwrap());
         let mut generator = names::Generator::default();
         let (first, last) = (generator.next().unwrap(), generator.next().unwrap());
+        let date_of_birth: u64 = chrono::Utc
+            .with_ymd_and_hms(2001, 12, 1, 0, 0, 0)
+            .single()
+            .unwrap()
+            .timestamp() as u64;
         let message_strings = BTreeMap::from([
             (VerifiedCredential::FIELD_FIRSTNAME, first.clone()),
             (VerifiedCredential::FIELD_LASTNAME, last.clone()),
         ]);
+        let message_u64 = BTreeMap::from([(VerifiedCredential::FIELD_DATEOFBIRTH, date_of_birth)]);
         let messages = vec![
             pk_x,
             pk_y,
             (&VerifierMessage(first)).into(),
             (&VerifierMessage(last)).into(),
+            date_of_birth.into(),
         ];
         VerifiedCredential {
             signature: SignatureG1::<Bls12_381>::new(
@@ -291,6 +301,7 @@ impl Issuer {
             .unwrap(),
             messages,
             message_strings,
+            message_u64,
         }
     }
 }
@@ -301,9 +312,10 @@ impl VerifiedCredential {
     pub const FIELD_PUB_Y: usize = 1;
     pub const FIELD_FIRSTNAME: usize = 2;
     pub const FIELD_LASTNAME: usize = 3;
-    pub const FIELD_COUNT: u32 = 4;
+    pub const FIELD_DATEOFBIRTH: usize = 4;
+    pub const FIELD_COUNT: u32 = 5;
 
-    /// Reeturns the string of the given message. Only works for the first
+    /// Returns the string of the given message. Only works for the first
     /// and last name. Returns `None` for the other fields.
     pub fn get_message_str(&self, field: usize) -> Option<String> {
         return self.message_strings.get(&field).cloned();
@@ -520,6 +532,7 @@ impl Swiyu {
         for idx in [
             VerifiedCredential::FIELD_FIRSTNAME,
             VerifiedCredential::FIELD_LASTNAME,
+            VerifiedCredential::FIELD_DATEOFBIRTH,
         ] {
             let msg = &vc.messages[idx];
             if reveal.contains(&idx) {
@@ -815,6 +828,7 @@ impl ECDSAProof {
                 (1, vc.messages[1]),
                 (2, vc.messages[2]),
                 (3, vc.messages[3]),
+                (4, vc.messages[4]),
             ]),
         ));
 
@@ -1251,16 +1265,9 @@ impl fmt::Display for VerifierMessage {
 
 #[cfg(test)]
 mod test {
-    use std::{
-        collections::{BTreeMap, BTreeSet},
-        error::Error,
-    };
+    use std::error::Error;
 
     use super::*;
-    use proof_system::{
-        prelude::bbs_plus::{PoKBBSSignatureG1Prover, PoKBBSSignatureG1Verifier},
-        witness::PoKBBSSignatureG1,
-    };
 
     // G3.2 - A complete test of the ECDSA signature verification.
     #[test]
@@ -1330,6 +1337,43 @@ mod test {
 
         // Holder creates a presentation with a proof of knowledge and zero or more revealed messages.
         // This is of course all done in the Swiyu app, but here we do it step-by-step.
+        let presentation = holder.swiyu().bbs_presentation(message.clone(), vec![]);
+        let presentation_closed = presentation.close();
+
+        // Holder sends the proof to the verifier, which checks it.
+        verifier.check_proof_bbs_only(message, presentation_closed.clone());
+        assert_eq!(
+            presentation_closed.message_string(VerifiedCredential::FIELD_FIRSTNAME),
+            None
+        );
+        assert_eq!(
+            presentation_closed.message_string(VerifiedCredential::FIELD_LASTNAME),
+            None
+        );
+
+        Ok(())
+    }
+
+    /// G5.2 - Proving a revelation of a BBS string field.
+    #[test]
+    fn proof_predicate() -> Result<(), Box<dyn Error>> {
+        // Set up parties
+        let setup = PublicSetup::new();
+        let mut issuer = Issuer::new(setup.clone());
+        let mut holder = MobilePhone::new(setup.clone());
+        let mut verifier = Verifier::new(setup.clone(), issuer.get_certificate());
+
+        // Install the swiyu app and add a credential
+        holder.install_swiyu();
+        let se_kp = holder.secure_element().create_kp();
+        let credential = issuer.new_credential(se_kp.key_pub);
+        holder.swiyu().add_vc(se_kp.id, credential.clone());
+
+        // Verifier requests a presentation from the holder
+        let message = verifier.create_message();
+
+        // Holder creates a presentation with a proof of knowledge and zero or more revealed messages.
+        // This is of course all done in the Swiyu app, but here we do it step-by-step.
         let presentation = holder
             .swiyu()
             .bbs_presentation(message.clone(), vec![VerifiedCredential::FIELD_FIRSTNAME]);
@@ -1349,152 +1393,39 @@ mod test {
         Ok(())
     }
 
-    /// G5.2 - Proving a Pedersen commitment to a scalar in BBS.
+    /// G5.2 - Proving an age verification of a BBS date.
     #[test]
     fn proof_predicate() -> Result<(), Box<dyn Error>> {
-        let mut rng = StdRng::seed_from_u64(0u64);
-        let holder_sk = SecP256Fr::rand(&mut StdRng::seed_from_u64(0u64));
-        let holder_pub = (ecdsa::Signature::generator() * holder_sk).into_affine();
-        let message_pet = (&VerifierMessage(format!("goldfish"))).into();
-        let message_pk_x = from_base_field_to_scalar_field::<Fq, BlsFr>(holder_pub.x().unwrap());
-        let message_pk_y = from_base_field_to_scalar_field::<Fq, BlsFr>(holder_pub.y().unwrap());
-        let messages = vec![message_pk_x, message_pk_y, message_pet];
-        let sig_params_g1 = SignatureParamsG1::<Bls12_381>::new::<Blake2b512>(
-            "eid-demo".as_bytes(),
-            messages.len() as u32,
+        // Set up parties
+        let setup = PublicSetup::new();
+        let mut issuer = Issuer::new(setup.clone());
+        let mut holder = MobilePhone::new(setup.clone());
+        let mut verifier = Verifier::new(setup.clone(), issuer.get_certificate());
+
+        // Install the swiyu app and add a credential
+        holder.install_swiyu();
+        let se_kp = holder.secure_element().create_kp();
+        let credential = issuer.new_credential(se_kp.key_pub);
+        holder.swiyu().add_vc(se_kp.id, credential.clone());
+
+        // Verifier requests a presentation from the holder
+        let message = verifier.create_message();
+
+        // Holder creates a presentation with a proof of knowledge and zero or more revealed messages.
+        // This is of course all done in the Swiyu app, but here we do it step-by-step.
+        let presentation = holder.swiyu().bbs_presentation(message.clone(), vec![]);
+        let presentation_closed = presentation.close();
+
+        // Holder sends the proof to the verifier, which checks it.
+        verifier.check_proof_bbs_only(message, presentation_closed.clone());
+        assert_eq!(
+            presentation_closed.message_string(VerifiedCredential::FIELD_FIRSTNAME),
+            Some(credential.message_strings[&VerifiedCredential::FIELD_FIRSTNAME].clone())
         );
-        let issuer_keypair = KeypairG2::<Bls12_381>::generate_using_rng(&mut rng, &sig_params_g1);
-
-        let signature_issuer = SignatureG1::<Bls12_381>::new(
-            &mut rng,
-            &messages,
-            &issuer_keypair.secret_key,
-            &sig_params_g1,
-        )
-        .unwrap();
-
-        let challenge = BlsFr::rand(&mut rng);
-        let proof_bbs = PoKOfSignatureG1Protocol::init(
-            &mut rng,
-            &signature_issuer,
-            &sig_params_g1,
-            vec![
-                MessageOrBlinding::BlindMessageRandomly(&message_pk_x),
-                MessageOrBlinding::BlindMessageRandomly(&message_pk_y),
-                MessageOrBlinding::RevealMessage(&message_pet),
-            ],
-        )
-        .unwrap()
-        .gen_proof(&challenge)
-        .unwrap();
-
-        let comm_key_bls = PedersenCommitmentKey::<BlsG1Affine>::new::<Blake2b512>(b"test3");
-        let randomness_pub_x = BlsFr::rand(&mut rng);
-        let commitment_pub_x = comm_key_bls.commit(&message_pk_x, &randomness_pub_x);
-        let randomness_pub_y = BlsFr::rand(&mut rng);
-        let commitment_pub_y = comm_key_bls.commit(&message_pk_y, &randomness_pub_y);
-
-        let mut statements = Statements::<Bls12_381>::new();
-        statements.add(PedersenCommitmentStmt::new_statement_from_params(
-            vec![comm_key_bls.g, comm_key_bls.h],
-            commitment_pub_x,
-        ));
-        statements.add(PedersenCommitmentStmt::new_statement_from_params(
-            vec![comm_key_bls.g, comm_key_bls.h],
-            commitment_pub_y,
-        ));
-        statements.add(
-            PoKBBSSignatureG1Prover::<Bls12_381>::new_statement_from_params(
-                sig_params_g1.clone(),
-                BTreeMap::from([(2, message_pet)]),
-            ),
+        assert_eq!(
+            presentation_closed.message_string(VerifiedCredential::FIELD_LASTNAME),
+            None
         );
-
-        let mut meta_statements = MetaStatements::new();
-        meta_statements.add(MetaStatement::WitnessEquality(EqualWitnesses(
-            vec![(0, 0), (2, 0)]
-                .into_iter()
-                .collect::<BTreeSet<WitnessRef>>(),
-        )));
-        meta_statements.add(MetaStatement::WitnessEquality(EqualWitnesses(
-            vec![(1, 0), (2, 1)]
-                .into_iter()
-                .collect::<BTreeSet<WitnessRef>>(),
-        )));
-
-        let mut witnesses = Witnesses::new();
-        witnesses.add(Witness::PedersenCommitment(vec![
-            message_pk_x.clone(),
-            randomness_pub_x,
-        ]));
-        witnesses.add(Witness::PedersenCommitment(vec![
-            message_pk_y.clone(),
-            randomness_pub_y,
-        ]));
-        witnesses.add(PoKBBSSignatureG1::new_as_witness(
-            signature_issuer,
-            BTreeMap::from([(0, message_pk_x), (1, message_pk_y)]),
-        ));
-
-        let context = Some(b"test".to_vec());
-        let proof_spec = ProofSpec::new(
-            statements.clone(),
-            meta_statements.clone(),
-            vec![],
-            context.clone(),
-        );
-        proof_spec.validate().unwrap();
-
-        let nonce_eq_pk = Some(b"test nonce".to_vec());
-        let proof_eq_pk = Proof::new::<StdRng, Blake2b512>(
-            &mut rng,
-            proof_spec.clone(),
-            witnesses.clone(),
-            nonce_eq_pk.clone(),
-            Default::default(),
-        )
-        .unwrap()
-        .0;
-
-        proof_bbs
-            .verify(
-                &BTreeMap::from([(2, message_pet)]),
-                &challenge,
-                issuer_keypair.public_key.clone(),
-                sig_params_g1.clone(),
-            )
-            .expect("Verify BBS proof");
-
-        let mut verifier_statements = Statements::<Bls12_381>::new();
-        verifier_statements.add(PedersenCommitmentStmt::new_statement_from_params(
-            vec![comm_key_bls.g, comm_key_bls.h],
-            commitment_pub_x,
-        ));
-        verifier_statements.add(PedersenCommitmentStmt::new_statement_from_params(
-            vec![comm_key_bls.g, comm_key_bls.h],
-            commitment_pub_y,
-        ));
-        verifier_statements.add(PoKBBSSignatureG1Verifier::new_statement_from_params(
-            sig_params_g1.clone(),
-            issuer_keypair.public_key.clone(),
-            BTreeMap::from([(2, message_pet)]),
-        ));
-        let verifier_proof_spec = ProofSpec::new(
-            verifier_statements.clone(),
-            meta_statements.clone(),
-            vec![],
-            context.clone(),
-        );
-        verifier_proof_spec.validate().unwrap();
-
-        proof_eq_pk
-            .verify::<StdRng, Blake2b512>(
-                &mut rng,
-                verifier_proof_spec,
-                nonce_eq_pk.clone(),
-                Default::default(),
-            )
-            .expect("Verify Point Equality Proof");
 
         Ok(())
     }
