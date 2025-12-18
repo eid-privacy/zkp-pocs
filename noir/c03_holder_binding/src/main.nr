@@ -1,4 +1,4 @@
-mod constants;
+use eid::{constants, decode_hex_32};
 
 fn main(
     // Private inputs
@@ -26,18 +26,4 @@ fn main(
         challenge_hash,
     );
     assert(signature_device_valid);
-}
-
-fn decode_hex_32(hex_str: [u8; constants::CREDENTIAL_LEN], start: u32) -> [u8; 32] {
-    let mut result: [u8; 32] = [0u8; 32];
-    for i in 0..32 {
-        let high_nibble = decode_nibble(hex_str[start + 2 * i]);
-        let low_nibble = decode_nibble(hex_str[start + 2 * i + 1]);
-        result[i] = high_nibble * 16 + low_nibble;
-    }
-    result
-}
-
-fn decode_nibble(hex_char: u8) -> u8 {
-    (hex_char & 0x0F) + (hex_char >> 6) * 9
 }

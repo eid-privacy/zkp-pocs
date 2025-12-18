@@ -13,7 +13,6 @@ repeated:
 	done
 
 clean:
-	rm -rf credentials proofs stats*
+	rm -rf credentials proofs stats* eid/src/constants.nr
 	find c??_* -name target | xargs rm -rf
-	find c??_* -name constants.nr | xargs rm -rf
 	find c??_* -name "Prover*toml" | xargs rm -rf

@@ -100,6 +100,28 @@ def get_revocation_list(start, len, key_private_issuer):
     return payload + signature
 
 
+def update_constants():
+    with open(os.path.join("eid", "src", "constants.nr"), "w") as f:
+        constants = [
+            "REVOCATION_LIST_IDS",
+            "CREDENTIAL_LEN_FIRST",
+            "CREDENTIAL_POS_FIRST",
+            "CREDENTIAL_LEN_LAST",
+            "CREDENTIAL_POS_LAST",
+            "CREDENTIAL_LEN_DOB",
+            "CREDENTIAL_POS_DOB",
+            "CREDENTIAL_LEN_DEVICE_PUB_X",
+            "CREDENTIAL_POS_DEVICE_PUB_X",
+            "CREDENTIAL_LEN_DEVICE_PUB_Y",
+            "CREDENTIAL_POS_DEVICE_PUB_Y",
+            "CREDENTIAL_LEN_CRED_ID",
+            "CREDENTIAL_POS_CRED_ID",
+            "CREDENTIAL_LEN",
+        ]
+        for name in constants:
+            f.write(f"pub global {name}: u32 = {getattr(common, name)};\n")
+
+
 if __name__ == "__main__":
     KEY_DIR = common.parse_args("Create credentials.")
     key_private_issuer = common.load_issuer_keys(KEY_DIR)["private_key_obj"]

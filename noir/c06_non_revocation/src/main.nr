@@ -1,5 +1,5 @@
+use eid::{constants, hex_to_u64, slice};
 use sha256::sha256_var;
-mod constants;
 
 global REVOCATION_LIST_LENGTH_WO_SIG: u32 = 8 + 8 + constants::REVOCATION_LIST_IDS / 8;
 global REVOCATION_LIST_LENGTH: u32 = REVOCATION_LIST_LENGTH_WO_SIG + 64;
@@ -49,26 +49,4 @@ fn main(
         revocation_hash,
     );
     assert(signature_valid);
-}
-
-fn slice<let IN: u32, let OUT: u32>(input: [u8; IN], start: u32) -> [u8; OUT] {
-    let mut out = [0u8; OUT];
-    for i in 0..OUT {
-        out[i] = input[start + i];
-    }
-    out
-}
-
-fn hex_to_u64(hex_str: [u8; constants::CREDENTIAL_LEN], start: u32) -> u64 {
-    let mut result = 0u64;
-    for i in 0..8 {
-        let high_nibble = decode_nibble(hex_str[start + 2 * i]);
-        let low_nibble = decode_nibble(hex_str[start + 2 * i + 1]);
-        result = (result << 8) + ((high_nibble << 4) + low_nibble) as u64;
-    }
-    result
-}
-
-fn decode_nibble(hex_char: u8) -> u8 {
-    (hex_char & 0x0F) + (hex_char >> 6) * 9
 }

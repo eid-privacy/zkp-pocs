@@ -1,5 +1,5 @@
+use eid::constants;
 use sha256::sha256_var;
-mod constants;
 
 fn main(
     // Private inputs

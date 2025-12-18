@@ -1,4 +1,4 @@
-mod constants;
+use eid::constants;
 
 fn main(
     // Private input
