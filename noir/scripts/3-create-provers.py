@@ -84,7 +84,6 @@ if __name__ == "__main__":
     print(keys["public_key_x"])
     print(keys["public_key_y"])
 
-    credentials_fixed = get_credentials(KEY_DIR, "credential_fixed*.json")
     credentials_device_fixed = get_credentials(KEY_DIR, "credential_device_fixed*.json")
 
     circuits = [
@@ -92,7 +91,6 @@ if __name__ == "__main__":
     ]
     for circuit in circuits:
         base = os.path.basename(circuit)
-        # prover_fixed(time_now, pubkey_issuer_xy, credentials_fixed, circuit)
         prover_fixed(
             common.TIME_NOW, pubkey_issuer_xy, credentials_device_fixed, circuit
         )

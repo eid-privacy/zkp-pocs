@@ -4,9 +4,10 @@ Generate secp256k1 ECDSA key pair for credential issuer.
 Outputs the keys in formats suitable for Noir circuit inputs.
 """
 
-from common import parse_args
-from coincurve import PrivateKey
 import os
+
+from coincurve import PrivateKey
+from common import parse_args
 
 
 def generate_keys():
@@ -49,7 +50,7 @@ def save_keys_to_file(keys, filename="issuer_keys.json"):
 
 
 if __name__ == "__main__":
-    KEY_DIR = parse_args("Generate secp256k1 issuer key pair.")
+    KEY_DIR = str(parse_args("Generate secp256k1 issuer key pair."))
     os.makedirs(KEY_DIR, exist_ok=True)
 
     print("Generating secp256k1 issuer key pair...")

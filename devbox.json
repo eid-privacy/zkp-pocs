@@ -2,12 +2,12 @@
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
   "packages": [
     "python@3.11",
-    "python311Packages.pip",
     "github:eid-privacy/flakes#noir-versions.v1_0_0-beta_13",
     "github:eid-privacy/flakes#barretenberg-versions.v1_2_1",
     "time@latest",
     "rustup@latest",
-    "cargo-nextest@latest"
+    "cargo-nextest@latest",
+    "python311Packages.pip@latest"
   ],
   "shell": {
     "init_hook": [
@@ -17,10 +17,10 @@
       "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi"
     ],
     "scripts": {
-      "dock-all": "cd docknetwork && cargo nextest run",
-      "noir-all": "cd noir && make all",
+      "dock-all":        "cd docknetwork && cargo nextest run",
+      "noir-all":        "cd noir && make all",
       "noir-experiment": "cd noir && make all",
-      "noir-clean": "cd noir && make clean"
+      "noir-clean":      "cd noir && make clean"
     }
   },
   "env": {

@@ -3,3 +3,4 @@ Prover*toml
 /credentials
 /proofs
 stats.*
+constants.nr

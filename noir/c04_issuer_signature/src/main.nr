@@ -1,6 +1,6 @@
 use sha256::sha256_var;
 
-global CREDENTIAL_LENGTH: u32 = 202;
+global CREDENTIAL_LENGTH: u32 = 218;
 
 fn main(
     // Private inputs

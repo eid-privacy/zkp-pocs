@@ -30,43 +30,20 @@ def create_credential(first_name, last_name, date_of_birth, cred_id, keys_device
     }
 
 
-def sign_store_fixed(dirname, label, credential, key_private_issuer):
-    """Create a representation of the fields with fixed-size widths, sign it, and store it
-    under the label in dirname."""
-    first_name_fixed = credential["first_name"].ljust(32, " ")[:32]
-    last_name_fixed = credential["last_name"].ljust(32, " ")[:32]
-    birth_timestamp_str = str(credential["birth_timestamp"]).rjust(10, "0")
-    cred_id = credential["cred_id"]
-
-    credential_string = (
-        first_name_fixed + last_name_fixed + birth_timestamp_str + cred_id
-    )
-    signature = key_private_issuer.sign_recoverable(credential_string.encode("utf-8"))[
-        :64
-    ]
-
-    filename = f"credential_fixed_{label}.json"
-    with open(os.path.join(dirname, filename), "w") as f:
-        json.dump(
-            {
-                "credential_string": credential_string,
-                # "message_hash": message_hash,
-                "signature_issuer": f"0x{signature.hex()}",
-            },
-            f,
-            indent=2,
-        )
-    print(f"Signed and stored {filename}...")
-
-
 def sign_store_fixed_device(
     dirname, label, credential, key_private_issuer, keys_device, revocation_list
 ):
     """Create a representation of the fields with fixed-size widths, sign it, and store it
     under the label in dirname."""
-    first_name_fixed = credential["first_name"].ljust(32, " ")[:32]
-    last_name_fixed = credential["last_name"].ljust(32, " ")[:32]
-    birth_timestamp_str = str(credential["birth_timestamp"]).rjust(10, "0")
+    first_name_fixed = credential["first_name"].ljust(common.CREDENTIAL_LEN_FIRST, " ")[
+        : common.CREDENTIAL_LEN_FIRST
+    ]
+    last_name_fixed = credential["last_name"].ljust(common.CREDENTIAL_LEN_LAST, " ")[
+        : common.CREDENTIAL_LEN_LAST
+    ]
+    birth_timestamp_str = str(credential["birth_timestamp"]).rjust(
+        common.CREDENTIAL_LEN_DOB, "0"
+    )
     cred_id = credential["cred_id"]
     device_key_x = str(credential["device_key_x"]).rjust(64, "0")
     device_key_y = str(credential["device_key_y"]).rjust(64, "0")
@@ -145,8 +122,6 @@ if __name__ == "__main__":
         cred_id=1234 * common.REVOCATION_LIST_SIZE + 568,
     )
 
-    sign_store_fixed(KEY_DIR, "alice", alice, key_private_issuer)
-    sign_store_fixed(KEY_DIR, "bob", bob, key_private_issuer)
     revocation_list = get_revocation_list(
         1234 * common.REVOCATION_LIST_SIZE,
         common.REVOCATION_LIST_SIZE,

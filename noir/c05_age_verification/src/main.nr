@@ -1,4 +1,4 @@
-global CREDENTIAL_LENGTH: u32 = 202;
+global CREDENTIAL_LENGTH: u32 = 218;
 
 fn main(
     // Private input
