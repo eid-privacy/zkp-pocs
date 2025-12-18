@@ -1,15 +1,17 @@
-global CREDENTIAL_LENGTH: u32 = 218;
+mod constants;
 
 fn main(
     // Private input
-    credential_string: str<CREDENTIAL_LENGTH>,
+    credential_string: str<constants::CREDENTIAL_LEN>,
     // Public input
     current_date: pub u64,
 ) {
     // Calculate the age in seconds
     let mut birth_timestamp: u64 = 0;
-    for i in 64..74 {
-        birth_timestamp = birth_timestamp * 10 + credential_string.as_bytes()[i] as u64 - 48;
+    for i in 0..constants::CREDENTIAL_LEN_DOB {
+        birth_timestamp = birth_timestamp * 10
+            + credential_string.as_bytes()[i + constants::CREDENTIAL_POS_DOB] as u64
+            - 48;
     }
     let age_seconds = current_date - birth_timestamp;
 

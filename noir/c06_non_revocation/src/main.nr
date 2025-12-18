@@ -1,14 +1,13 @@
 use sha256::sha256_var;
 mod constants;
 
-global CREDENTIAL_LENGTH: u32 = 218;
 global REVOCATION_LIST_LENGTH_WO_SIG: u32 = 8 + 8 + constants::REVOCATION_LIST_IDS / 8;
 global REVOCATION_LIST_LENGTH: u32 = REVOCATION_LIST_LENGTH_WO_SIG + 64;
 global REVOCATION_LIST_VALIDITY: u64 = 86400 * 7;
 
 fn main(
     // Private inputs
-    credential_string: str<CREDENTIAL_LENGTH>,
+    credential_string: str<constants::CREDENTIAL_LEN>,
     revocation_list: [u8; REVOCATION_LIST_LENGTH],
     // Public inputs
     current_date: pub u64,
@@ -16,7 +15,10 @@ fn main(
     pubkey_issuer_y: pub [u8; 32],
 ) {
     // Step 1: Read the ID of the credential and the start of the list
-    let cred_id = hex_to_u64(credential_string.as_bytes(), 202);
+    let cred_id = hex_to_u64(
+        credential_string.as_bytes(),
+        constants::CREDENTIAL_POS_CRED_ID,
+    );
     let list_start = Field::from_be_bytes::<8>(slice(revocation_list, 0)) as u64;
 
     // Step 2: Assert that the list contains the ID of the credential
@@ -57,7 +59,7 @@ fn slice<let IN: u32, let OUT: u32>(input: [u8; IN], start: u32) -> [u8; OUT] {
     out
 }
 
-fn hex_to_u64(hex_str: [u8; CREDENTIAL_LENGTH], start: u32) -> u64 {
+fn hex_to_u64(hex_str: [u8; constants::CREDENTIAL_LEN], start: u32) -> u64 {
     let mut result = 0u64;
     for i in 0..8 {
         let high_nibble = decode_nibble(hex_str[start + 2 * i]);

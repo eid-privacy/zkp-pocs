@@ -28,8 +28,6 @@ prove_circuit(){
 	cat $PROOF_DIR/proof | wc -c >> stats.txt
 }
 
-c03_holder_binding,0.17,0.46,0.02,16224
-
 echo "test,acir,circuit,create_vk,create_proof,verify,proof_size" > stats.csv
 
 for circuit in c??_*; do

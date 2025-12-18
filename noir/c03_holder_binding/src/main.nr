@@ -1,8 +1,8 @@
-global CREDENTIAL_LENGTH: u32 = 218;
+mod constants;
 
 fn main(
     // Private inputs
-    credential_string: str<CREDENTIAL_LENGTH>,
+    credential_string: str<constants::CREDENTIAL_LEN>,
     signature_device: [u8; 64],
     // Public input
     challenge_hash: pub [u8; 32],
@@ -10,8 +10,14 @@ fn main(
     // Step 1: Verify device signature on the challenge hash
     // Extract public key from credential_raw from hex encoded values in position
     // 74 to 138 (32 bytes X, 32 bytes Y).
-    let pubkey_device_x = decode_hex_32(credential_string.as_bytes(), 74);
-    let pubkey_device_y = decode_hex_32(credential_string.as_bytes(), 138);
+    let pubkey_device_x = decode_hex_32(
+        credential_string.as_bytes(),
+        constants::CREDENTIAL_POS_DEVICE_PUB_X,
+    );
+    let pubkey_device_y = decode_hex_32(
+        credential_string.as_bytes(),
+        constants::CREDENTIAL_POS_DEVICE_PUB_Y,
+    );
 
     let signature_device_valid = std::ecdsa_secp256k1::verify_signature(
         pubkey_device_x,
@@ -22,7 +28,7 @@ fn main(
     assert(signature_device_valid);
 }
 
-fn decode_hex_32(hex_str: [u8; CREDENTIAL_LENGTH], start: u32) -> [u8; 32] {
+fn decode_hex_32(hex_str: [u8; constants::CREDENTIAL_LEN], start: u32) -> [u8; 32] {
     let mut result: [u8; 32] = [0u8; 32];
     for i in 0..32 {
         let high_nibble = decode_nibble(hex_str[start + 2 * i]);

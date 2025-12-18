@@ -112,19 +112,19 @@ if __name__ == "__main__":
         last_name="Smith",
         date_of_birth="2000-05-15",
         keys_device=keys_device_alice,
-        cred_id=1234 * common.REVOCATION_LIST_SIZE + 567,
+        cred_id=1234 * common.REVOCATION_LIST_IDS + 567,
     )
     bob = create_credential(
         first_name="Bob",
         last_name="Berg",
         date_of_birth="2010-05-15",
         keys_device=keys_device_bob,
-        cred_id=1234 * common.REVOCATION_LIST_SIZE + 568,
+        cred_id=1234 * common.REVOCATION_LIST_IDS + 568,
     )
 
     revocation_list = get_revocation_list(
-        1234 * common.REVOCATION_LIST_SIZE,
-        common.REVOCATION_LIST_SIZE,
+        1234 * common.REVOCATION_LIST_IDS,
+        common.REVOCATION_LIST_IDS,
         key_private_issuer,
     )
     sign_store_fixed_device(
