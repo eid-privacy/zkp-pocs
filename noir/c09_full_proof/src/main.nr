@@ -1,4 +1,4 @@
-use eid::{constants, hex_to_u64, slice, decode_hex_32};
+use eid::{constants, decode_hex_32, hex_to_u64, slice};
 use sha256::sha256_var;
 
 fn main(

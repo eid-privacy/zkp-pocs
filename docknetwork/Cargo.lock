@@ -957,7 +957,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ecdsa_proof"
+name = "docknetwork"
 version = "0.1.0"
 dependencies = [
  "ark-bls12-381",
