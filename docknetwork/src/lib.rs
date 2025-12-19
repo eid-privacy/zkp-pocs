@@ -42,7 +42,10 @@ use proof_system::{
     },
     proof::Proof,
     proof_spec::ProofSpec,
-    statement::{Statements, ped_comm::PedersenCommitment as PedersenCommitmentStmt},
+    statement::{
+        Statements, bound_check_bpp::BoundCheckBpp,
+        ped_comm::PedersenCommitment as PedersenCommitmentStmt,
+    },
     witness::PoKBBSSignatureG1,
 };
 
@@ -128,6 +131,22 @@ impl Common {
             &self.kp_issuer.public_key,
         );
     }
+
+    /// Create an age proof proving the holder's date of birth is before `max_dob`.
+    /// This proves the holder is at least `(now - max_dob)` years old.
+    pub fn create_age_proof(&mut self, max_dob: u64) -> AgeProof {
+        AgeProof::new(
+            &mut self.setup,
+            &self.credential,
+            &self.kp_issuer.public_key,
+            max_dob,
+        )
+    }
+
+    /// Verify an age proof for the given `max_dob` bound.
+    pub fn verify_age_proof(&self, proof: &AgeProof, max_dob: u64) {
+        proof.verify(&self.setup, &self.kp_issuer.public_key, max_dob);
+    }
 }
 
 #[derive(Debug)]
@@ -166,6 +185,8 @@ pub struct PublicSetup {
     pub comm_key_secp: PedersenCommitmentKey<SecP256Affine>,
     /// Commitment generators for the Bls12-381 keys
     pub comm_key_bls: PedersenCommitmentKey<BlsG1Affine>,
+    /// Bulletproof setup parameters for BBS bound checks on Bls12-381 curve.
+    pub bpp_setup_params_bls: BppSetupParams<BlsG1Affine>,
 }
 
 impl PublicSetup {
@@ -194,6 +215,15 @@ impl PublicSetup {
         bpp_setup_params.G = comm_key_tom.g;
         bpp_setup_params.H_vec[0] = comm_key_tom.h;
 
+        // Bulletproofs++ setup for BBS bound checks on Bls12-381 curve
+        let bpp_setup_params_bls =
+            BppSetupParams::<BlsG1Affine>::new_for_perfect_range_proof::<Blake2b512>(
+                b"bbs-bounds",
+                base,
+                PublicSetup::WITNESS_BIT_SIZE as u16,
+                PublicSetup::NUM_CHUNKS as u32,
+            );
+
         Self {
             sig_params_g1: SignatureParamsG1::<Bls12_381>::new::<Blake2b512>(
                 "eid-demo".as_bytes(),
@@ -204,6 +234,7 @@ impl PublicSetup {
             comm_key_tom,
             comm_key_secp: PedersenCommitmentKey::<SecP256Affine>::new::<Blake2b512>(b"test1"),
             comm_key_bls: PedersenCommitmentKey::<BlsG1Affine>::new::<Blake2b512>(b"test3"),
+            bpp_setup_params_bls,
         }
     }
 
@@ -1010,5 +1041,137 @@ impl Serialize for ECDSAProof {
         state.serialize_field("proof_eq_pk_x", &proof_eq_pk_x_bytes)?;
         state.serialize_field("proof_eq_pk_y", &proof_eq_pk_y_bytes)?;
         state.end()
+    }
+}
+
+/// An [AgeProof] proves that the holder's date of birth is within a given bound,
+/// proving they are at least a certain age without revealing the exact date.
+pub struct AgeProof {
+    proof: Proof<Bls12_381>,
+}
+
+impl AgeProof {
+    /// Create a new age proof proving that `date_of_birth < max_dob`.
+    /// This proves the holder was born before `max_dob`, i.e., they are at least
+    /// `(now - max_dob)` years old.
+    pub fn new(
+        setup: &mut PublicSetup,
+        vc: &VerifiedCredential,
+        _issuer_pk: &PublicKeyG2<Bls12_381>,
+        max_dob: u64,
+    ) -> Self {
+        let statements = Self::prover_statements(setup, max_dob);
+        let meta_statements = Self::meta_statements();
+
+        // Create witnesses
+        let mut witnesses = Witnesses::new();
+        witnesses.add(PoKBBSSignatureG1::new_as_witness(
+            vc.signature.clone(),
+            BTreeMap::from([
+                (0, vc.messages[0]),
+                (1, vc.messages[1]),
+                (2, vc.messages[2]),
+                (3, vc.messages[3]),
+                (4, vc.messages[4]),
+            ]),
+        ));
+        witnesses.add(Witness::BoundCheckBpp(
+            vc.message_u64[&VerifiedCredential::FIELD_DATEOFBIRTH].into(),
+        ));
+
+        let proof_spec = ProofSpec::new(statements, meta_statements, vec![], None);
+        proof_spec.validate().expect("Invalid proof spec");
+
+        let proof = Proof::new::<StdRng, Blake2b512>(
+            &mut setup.rng,
+            proof_spec,
+            witnesses,
+            None,
+            Default::default(),
+        )
+        .expect("Failed to create age proof")
+        .0;
+
+        Self { proof }
+    }
+
+    /// Verify that the age proof is valid for the given `max_dob` bound.
+    pub fn verify(&self, setup: &PublicSetup, issuer_pk: &PublicKeyG2<Bls12_381>, max_dob: u64) {
+        let statements = Self::verifier_statements(setup, issuer_pk, max_dob);
+        let meta_statements = Self::meta_statements();
+
+        let proof_spec = ProofSpec::new(statements, meta_statements, vec![], None);
+
+        self.proof
+            .clone()
+            .verify::<StdRng, Blake2b512>(
+                &mut StdRng::seed_from_u64(0),
+                proof_spec,
+                None,
+                Default::default(),
+            )
+            .expect("Age proof verification failed");
+    }
+
+    /// Create prover statements for age proof.
+    fn prover_statements(setup: &PublicSetup, max_dob: u64) -> Statements<Bls12_381> {
+        let mut statements = Statements::<Bls12_381>::new();
+        // Statement 0: BBS signature proof of knowledge
+        statements.add(
+            PoKBBSSignatureG1Prover::<Bls12_381>::new_statement_from_params(
+                setup.sig_params_g1.clone(),
+                BTreeMap::new(), // No revealed messages
+            ),
+        );
+        // Statement 1: Bound check (0 <= dob < max_dob)
+        statements.add(
+            BoundCheckBpp::new_statement_from_params(
+                0,
+                max_dob,
+                setup.bpp_setup_params_bls.clone(),
+            )
+            .expect("Failed to create BoundCheckBpp statement"),
+        );
+        statements
+    }
+
+    /// Create verifier statements for age proof.
+    fn verifier_statements(
+        setup: &PublicSetup,
+        issuer_pk: &PublicKeyG2<Bls12_381>,
+        max_dob: u64,
+    ) -> Statements<Bls12_381> {
+        let mut statements = Statements::<Bls12_381>::new();
+        // Statement 0: BBS signature verification
+        statements.add(PoKBBSSignatureG1Verifier::new_statement_from_params(
+            setup.sig_params_g1.clone(),
+            issuer_pk.clone(),
+            BTreeMap::new(),
+        ));
+        // Statement 1: Bound check (0 <= dob < max_dob)
+        statements.add(
+            BoundCheckBpp::new_statement_from_params(
+                0,
+                max_dob,
+                setup.bpp_setup_params_bls.clone(),
+            )
+            .expect("Failed to create BoundCheckBpp statement"),
+        );
+        statements
+    }
+
+    /// Create meta statements linking BBS message to bound check witness.
+    fn meta_statements() -> MetaStatements {
+        let mut meta_statements = MetaStatements::new();
+        // Link BBS message[4] (DOB) to bound check witness
+        meta_statements.add(MetaStatement::WitnessEquality(EqualWitnesses(
+            vec![
+                (0, VerifiedCredential::FIELD_DATEOFBIRTH), // BBS sig msg at index 4
+                (1, 0),                                     // Bound check witness
+            ]
+            .into_iter()
+            .collect::<BTreeSet<WitnessRef>>(),
+        )));
+        meta_statements
     }
 }
