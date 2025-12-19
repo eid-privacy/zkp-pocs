@@ -7,7 +7,8 @@
     "time@latest",
     "rustup@latest",
     "cargo-nextest@latest",
-    "python311Packages.pip@latest"
+    "python311Packages.pip@latest",
+    "jq@latest"
   ],
   "shell": {
     "init_hook": [
@@ -17,8 +18,8 @@
       "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi"
     ],
     "scripts": {
-      "dock-all": "cd docknetwork && cargo nextest run",
-      "noir-all": "cd noir && make all",
+      "dock-all":   "cd docknetwork && cargo nextest run",
+      "noir-all":   "cd noir && make all",
       "noir-clean": "cd noir && make clean"
     }
   },

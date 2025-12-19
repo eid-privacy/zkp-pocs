@@ -18,7 +18,7 @@ For this first PoC, we chose the following formats:
 - Credential: a fixed-size credential, where every attribute has a fixed
 size, but can be 0-padded
 - Signatures: both the issuer and the device signature are done using
-ECDSA over P-256
+ECDSA over secp256k1
 
 # Inputs and Proofs created
 

@@ -1,5 +1,9 @@
 pub mod constants;
 
+pub global REVOCATION_LIST_LENGTH_WO_SIG: u32 = 8 + 8 + constants::REVOCATION_LIST_IDS / 8;
+pub global REVOCATION_LIST_LENGTH: u32 = REVOCATION_LIST_LENGTH_WO_SIG + 64;
+pub global REVOCATION_LIST_VALIDITY: u64 = 86400 * 7;
+
 pub fn slice<let IN: u32, let OUT: u32>(input: [u8; IN], start: u32) -> [u8; OUT] {
     let mut out = [0u8; OUT];
     for i in 0..OUT {

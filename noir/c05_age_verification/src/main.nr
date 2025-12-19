@@ -13,6 +13,7 @@ fn main(
             + credential_string.as_bytes()[i + constants::CREDENTIAL_POS_DOB] as u64
             - 48;
     }
+    assert(birth_timestamp <= current_date);
     let age_seconds = current_date - birth_timestamp;
 
     // Ignoring leap years and check against 18 years of duration: 365.25 * 24 * 3600 = 31,557,600
