@@ -43,20 +43,20 @@ use proof_system::{
     proof::Proof,
     proof_spec::ProofSpec,
     statement::{
-        Statements, bound_check_bpp::BoundCheckBpp,
-        ped_comm::PedersenCommitment as PedersenCommitmentStmt,
+        Statements,
         accumulator::cdh::{
             KBUniversalAccumulatorNonMembershipCDHProver,
             KBUniversalAccumulatorNonMembershipCDHVerifier,
         },
+        bound_check_bpp::BoundCheckBpp,
+        ped_comm::PedersenCommitment as PedersenCommitmentStmt,
     },
     witness::{KBUniNonMembership, PoKBBSSignatureG1},
 };
 use test_utils::accumulators::InMemoryState;
 use vb_accumulator::{
     kb_universal_accumulator::{
-        KBUniversalAccumulator,
-        witness::KBUniversalAccumulatorNonMembershipWitness,
+        KBUniversalAccumulator, witness::KBUniversalAccumulatorNonMembershipWitness,
     },
     positive::Accumulator as AccumTrait,
     prelude::{Keypair as AccumKeypair, SetupParams as AccumParams},
@@ -86,7 +86,8 @@ impl Common {
 
         // Extend the accumulator domain with the credential ID
         // This allows the holder to prove non-revocation
-        let cred_id: BlsFr = credential.message_u64[&VerifiedCredential::FIELD_CREDENTIAL_ID].into();
+        let cred_id: BlsFr =
+            credential.message_u64[&VerifiedCredential::FIELD_CREDENTIAL_ID].into();
         setup.accumulator = setup
             .accumulator
             .extend_domain(
@@ -179,7 +180,8 @@ impl Common {
     pub fn get_non_membership_witness(
         &self,
     ) -> KBUniversalAccumulatorNonMembershipWitness<BlsG1Affine> {
-        let cred_id: BlsFr = self.credential.message_u64[&VerifiedCredential::FIELD_CREDENTIAL_ID].into();
+        let cred_id: BlsFr =
+            self.credential.message_u64[&VerifiedCredential::FIELD_CREDENTIAL_ID].into();
         self.setup
             .accumulator
             .get_non_membership_witness(
@@ -1211,6 +1213,11 @@ impl AgeProof {
             .expect("Age proof verification failed");
     }
 
+    /// Returns the size of the proof in bytes.
+    pub fn get_size(&self) -> usize {
+        self.proof.compressed_size()
+    }
+
     /// Create prover statements for age proof.
     fn prover_statements(setup: &PublicSetup, max_dob: u64) -> Statements<Bls12_381> {
         let mut statements = Statements::<Bls12_381>::new();
@@ -1348,6 +1355,11 @@ impl NonRevocationProof {
             .expect("Non-revocation proof verification failed");
     }
 
+    /// Returns the size of the proof in bytes.
+    pub fn get_size(&self) -> usize {
+        self.proof.compressed_size()
+    }
+
     /// Create prover statements for non-revocation proof.
     fn prover_statements(setup: &PublicSetup) -> Statements<Bls12_381> {
         let mut statements = Statements::<Bls12_381>::new();
@@ -1402,5 +1414,84 @@ impl NonRevocationProof {
             .collect::<BTreeSet<WitnessRef>>(),
         )));
         meta_statements
+    }
+}
+
+/// Statistics tracking for benchmark timing and proof sizes.
+/// Outputs CSV format: test_name,setup_time,proof_create_time,verify_time,proof_size
+pub struct Stats {
+    name: String,
+    start_time: std::time::Instant,
+    setup_time: Option<std::time::Duration>,
+    proof_create_time: Option<std::time::Duration>,
+    verify_time: Option<std::time::Duration>,
+    proof_size: Option<usize>,
+}
+
+impl Stats {
+    /// Initialize a new stats tracker with the given test name.
+    pub fn start(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            start_time: std::time::Instant::now(),
+            setup_time: None,
+            proof_create_time: None,
+            verify_time: None,
+            proof_size: None,
+        }
+    }
+
+    /// Record the setup time (time since start).
+    pub fn mark_setup(&mut self) {
+        self.setup_time = Some(self.start_time.elapsed());
+    }
+
+    /// Record the proof creation time (time since last mark or start).
+    pub fn mark_proof_create(&mut self) {
+        let elapsed = self.start_time.elapsed();
+        let prev = self.setup_time.unwrap_or(std::time::Duration::ZERO);
+        self.proof_create_time = Some(elapsed - prev);
+    }
+
+    /// Record the verification time (time since last mark or start).
+    pub fn mark_verify(&mut self) {
+        let elapsed = self.start_time.elapsed();
+        let prev = self.setup_time.unwrap_or(std::time::Duration::ZERO)
+            + self.proof_create_time.unwrap_or(std::time::Duration::ZERO);
+        self.verify_time = Some(elapsed - prev);
+    }
+
+    /// Set the proof size in bytes.
+    pub fn set_proof_size(&mut self, size: usize) {
+        self.proof_size = Some(size);
+    }
+
+    /// Print the statistics in CSV format.
+    /// Output goes to console or to a file if STATS_FILE environment variable is set.
+    pub fn print(&self) {
+        let setup_ms = self.setup_time.map(|d| d.as_secs_f64()).unwrap_or(0.0);
+        let proof_ms = self
+            .proof_create_time
+            .map(|d| d.as_secs_f64())
+            .unwrap_or(0.0);
+        let verify_ms = self.verify_time.map(|d| d.as_secs_f64()).unwrap_or(0.0);
+        let size = self.proof_size.unwrap_or(0);
+
+        let line = format!(
+            "{},{:.3},{:.3},{:.3},{}",
+            self.name, setup_ms, proof_ms, verify_ms, size
+        );
+
+        if let Ok(file_path) = std::env::var("STATS_FILE") {
+            use std::io::Write;
+            let mut file = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&file_path)
+                .expect("Failed to open stats file");
+            writeln!(file, "{}", line).expect("Failed to write to stats file");
+        } else {
+            println!("{}", line);
+        }
     }
 }
