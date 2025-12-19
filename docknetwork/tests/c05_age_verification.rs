@@ -62,20 +62,6 @@ fn c05_proof_predicate_age() -> Result<(), Box<dyn Error>> {
 
     // The test credential has DOB = Dec 1, 2001, so the holder is 23 years old
     // (as of Jan 1, 2025) and should pass the 18+ check.
-    println!(
-        "Threshold (18 years before Jan 1, 2025): {} ({})",
-        eighteen_years_ago,
-        chrono::DateTime::from_timestamp(eighteen_years_ago as i64, 0).unwrap()
-    );
-    println!(
-        "Holder DOB: {} ({})",
-        common.credential.message_u64[&VerifiedCredential::FIELD_DATEOFBIRTH],
-        chrono::DateTime::from_timestamp(
-            common.credential.message_u64[&VerifiedCredential::FIELD_DATEOFBIRTH] as i64,
-            0
-        )
-        .unwrap()
-    );
 
     // Create age proof (prover/holder side)
     let age_proof = common.create_age_proof(eighteen_years_ago);
@@ -84,8 +70,6 @@ fn c05_proof_predicate_age() -> Result<(), Box<dyn Error>> {
     // Verify age proof (verifier side)
     common.verify_age_proof(&age_proof, eighteen_years_ago);
     stats.mark_verify();
-
-    println!("Age verification passed: holder is at least 18 years old");
 
     // Calculate proof size
     let total_size = age_proof.get_size();
