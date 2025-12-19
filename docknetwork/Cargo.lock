@@ -981,6 +981,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "test_utils",
+ "vb_accumulator",
 ]
 
 [[package]]

@@ -6,7 +6,7 @@ use ark_serialize::{CanonicalSerialize, Compress, SerializationError};
 use ark_std::{
     UniformRand,
     io::Write,
-    rand::{SeedableRng, rngs::StdRng},
+    rand::{RngCore, SeedableRng, rngs::StdRng},
     vec::Vec,
 };
 use base64::prelude::*;
@@ -45,8 +45,21 @@ use proof_system::{
     statement::{
         Statements, bound_check_bpp::BoundCheckBpp,
         ped_comm::PedersenCommitment as PedersenCommitmentStmt,
+        accumulator::cdh::{
+            KBUniversalAccumulatorNonMembershipCDHProver,
+            KBUniversalAccumulatorNonMembershipCDHVerifier,
+        },
     },
-    witness::PoKBBSSignatureG1,
+    witness::{KBUniNonMembership, PoKBBSSignatureG1},
+};
+use test_utils::accumulators::InMemoryState;
+use vb_accumulator::{
+    kb_universal_accumulator::{
+        KBUniversalAccumulator,
+        witness::KBUniversalAccumulatorNonMembershipWitness,
+    },
+    positive::Accumulator as AccumTrait,
+    prelude::{Keypair as AccumKeypair, SetupParams as AccumParams},
 };
 
 use serde::ser::SerializeStruct;
@@ -70,6 +83,19 @@ impl Common {
         let kp_holder = P256Keypair::new(&mut setup);
         let credential =
             VerifiedCredential::new(&mut setup, kp_holder.public_key, &kp_issuer.secret_key);
+
+        // Extend the accumulator domain with the credential ID
+        // This allows the holder to prove non-revocation
+        let cred_id: BlsFr = credential.message_u64[&VerifiedCredential::FIELD_CREDENTIAL_ID].into();
+        setup.accumulator = setup
+            .accumulator
+            .extend_domain(
+                &setup.accum_keypair.secret_key,
+                vec![cred_id],
+                &mut setup.accum_non_mem_state,
+            )
+            .expect("Failed to extend accumulator domain");
+
         Self {
             setup,
             kp_issuer,
@@ -147,6 +173,33 @@ impl Common {
     pub fn verify_age_proof(&self, proof: &AgeProof, max_dob: u64) {
         proof.verify(&self.setup, &self.kp_issuer.public_key, max_dob);
     }
+
+    /// Get a non-membership witness for the credential's ID.
+    /// This proves the credential ID is not in the revocation accumulator.
+    pub fn get_non_membership_witness(
+        &self,
+    ) -> KBUniversalAccumulatorNonMembershipWitness<BlsG1Affine> {
+        let cred_id: BlsFr = self.credential.message_u64[&VerifiedCredential::FIELD_CREDENTIAL_ID].into();
+        self.setup
+            .accumulator
+            .get_non_membership_witness(
+                &cred_id,
+                &self.setup.accum_keypair.secret_key,
+                &self.setup.accum_non_mem_state,
+            )
+            .expect("Failed to get non-membership witness")
+    }
+
+    /// Create a non-revocation proof proving the credential is not revoked.
+    pub fn create_non_revocation_proof(&mut self) -> NonRevocationProof {
+        let witness = self.get_non_membership_witness();
+        NonRevocationProof::new(&mut self.setup, &self.credential, &witness)
+    }
+
+    /// Verify a non-revocation proof.
+    pub fn verify_non_revocation_proof(&self, proof: &NonRevocationProof) {
+        proof.verify(&self.setup, &self.kp_issuer.public_key);
+    }
 }
 
 #[derive(Debug)]
@@ -187,6 +240,16 @@ pub struct PublicSetup {
     pub comm_key_bls: PedersenCommitmentKey<BlsG1Affine>,
     /// Bulletproof setup parameters for BBS bound checks on Bls12-381 curve.
     pub bpp_setup_params_bls: BppSetupParams<BlsG1Affine>,
+    /// KB Universal Accumulator setup parameters for non-revocation proofs.
+    pub accum_params: AccumParams<Bls12_381>,
+    /// KB Universal Accumulator keypair (contains both public and secret key).
+    pub accum_keypair: AccumKeypair<Bls12_381>,
+    /// The KB Universal Accumulator containing revoked credential IDs.
+    pub accumulator: KBUniversalAccumulator<BlsG1Affine>,
+    /// Membership state tracking (revoked credential IDs).
+    pub accum_mem_state: InMemoryState<BlsFr>,
+    /// Non-membership state tracking for witnesses.
+    pub accum_non_mem_state: InMemoryState<BlsFr>,
 }
 
 impl PublicSetup {
@@ -224,17 +287,39 @@ impl PublicSetup {
                 PublicSetup::NUM_CHUNKS as u32,
             );
 
+        // KB Universal Accumulator setup for non-revocation proofs
+        let mut rng = StdRng::seed_from_u64(0u64);
+        let accum_params = AccumParams::<Bls12_381>::new::<Blake2b512>(b"accum-params");
+        let accum_keypair = AccumKeypair::<Bls12_381>::generate_using_rng(&mut rng, &accum_params);
+        // Initialize empty accumulator (no revoked credentials yet)
+        // Use empty domain - we'll add elements dynamically if needed
+        let accum_mem_state = InMemoryState::<BlsFr>::new();
+        let mut accum_non_mem_state = InMemoryState::<BlsFr>::new();
+        // Initialize with empty domain - all credential IDs start as non-members
+        let accumulator = KBUniversalAccumulator::initialize(
+            &accum_params,
+            &accum_keypair.secret_key,
+            vec![], // empty domain
+            &mut accum_non_mem_state,
+        )
+        .expect("Failed to initialize KB Universal Accumulator");
+
         Self {
             sig_params_g1: SignatureParamsG1::<Bls12_381>::new::<Blake2b512>(
                 "eid-demo".as_bytes(),
                 VerifiedCredential::FIELD_COUNT,
             ),
-            rng: StdRng::seed_from_u64(0u64),
+            rng,
             bpp_setup_params,
             comm_key_tom,
             comm_key_secp: PedersenCommitmentKey::<SecP256Affine>::new::<Blake2b512>(b"test1"),
             comm_key_bls: PedersenCommitmentKey::<BlsG1Affine>::new::<Blake2b512>(b"test3"),
             bpp_setup_params_bls,
+            accum_params,
+            accum_keypair,
+            accumulator,
+            accum_mem_state,
+            accum_non_mem_state,
         }
     }
 
@@ -279,7 +364,8 @@ impl VerifiedCredential {
     pub const FIELD_FIRSTNAME: usize = 2;
     pub const FIELD_LASTNAME: usize = 3;
     pub const FIELD_DATEOFBIRTH: usize = 4;
-    pub const FIELD_COUNT: u32 = 5;
+    pub const FIELD_CREDENTIAL_ID: usize = 5;
+    pub const FIELD_COUNT: u32 = 6;
 
     pub fn new(
         setup: &mut PublicSetup,
@@ -295,17 +381,23 @@ impl VerifiedCredential {
             .single()
             .unwrap()
             .timestamp() as u64;
+        // Generate a random 64-bit credential ID
+        let credential_id: u64 = setup.rng.next_u64();
         let message_strings = BTreeMap::from([
             (VerifiedCredential::FIELD_FIRSTNAME, first.clone()),
             (VerifiedCredential::FIELD_LASTNAME, last.clone()),
         ]);
-        let message_u64 = BTreeMap::from([(VerifiedCredential::FIELD_DATEOFBIRTH, date_of_birth)]);
+        let message_u64 = BTreeMap::from([
+            (VerifiedCredential::FIELD_DATEOFBIRTH, date_of_birth),
+            (VerifiedCredential::FIELD_CREDENTIAL_ID, credential_id),
+        ]);
         let messages = vec![
             pk_x,
             pk_y,
             (&VerifierMessage(first)).into(),
             (&VerifierMessage(last)).into(),
             date_of_birth.into(),
+            credential_id.into(),
         ];
         VerifiedCredential {
             signature: SignatureG1::<Bls12_381>::new(
@@ -413,6 +505,10 @@ impl BBSPresentation {
                 messages_and_blindings.push(MessageOrBlinding::BlindMessageRandomly(msg));
             }
         }
+        // Add the credential ID (always hidden)
+        messages_and_blindings.push(MessageOrBlinding::BlindMessageRandomly(
+            &vc.messages[VerifiedCredential::FIELD_CREDENTIAL_ID],
+        ));
 
         let proof = PoKOfSignatureG1Protocol::init(
             &mut setup.rng,
@@ -842,6 +938,7 @@ impl ECDSAProof {
                 (2, vc.messages[2]),
                 (3, vc.messages[3]),
                 (4, vc.messages[4]),
+                (5, vc.messages[5]),
             ]),
         ));
 
@@ -1073,6 +1170,7 @@ impl AgeProof {
                 (2, vc.messages[2]),
                 (3, vc.messages[3]),
                 (4, vc.messages[4]),
+                (5, vc.messages[5]),
             ]),
         ));
         witnesses.add(Witness::BoundCheckBpp(
@@ -1168,6 +1266,137 @@ impl AgeProof {
             vec![
                 (0, VerifiedCredential::FIELD_DATEOFBIRTH), // BBS sig msg at index 4
                 (1, 0),                                     // Bound check witness
+            ]
+            .into_iter()
+            .collect::<BTreeSet<WitnessRef>>(),
+        )));
+        meta_statements
+    }
+}
+
+/// A [NonRevocationProof] proves that a credential ID is not in the revocation
+/// accumulator, demonstrating the credential has not been revoked.
+pub struct NonRevocationProof {
+    proof: Proof<Bls12_381>,
+}
+
+impl NonRevocationProof {
+    /// Create a new non-revocation proof proving that the credential ID is not
+    /// in the revocation accumulator.
+    pub fn new(
+        setup: &mut PublicSetup,
+        vc: &VerifiedCredential,
+        non_mem_witness: &KBUniversalAccumulatorNonMembershipWitness<BlsG1Affine>,
+    ) -> Self {
+        let statements = Self::prover_statements(setup);
+        let meta_statements = Self::meta_statements();
+
+        // Get the credential ID as a scalar
+        let cred_id: BlsFr = vc.message_u64[&VerifiedCredential::FIELD_CREDENTIAL_ID].into();
+
+        // Create witnesses
+        let mut witnesses = Witnesses::new();
+        // Witness 0: BBS signature proof of knowledge (all messages hidden)
+        witnesses.add(PoKBBSSignatureG1::new_as_witness(
+            vc.signature.clone(),
+            BTreeMap::from([
+                (0, vc.messages[0]),
+                (1, vc.messages[1]),
+                (2, vc.messages[2]),
+                (3, vc.messages[3]),
+                (4, vc.messages[4]),
+                (5, vc.messages[5]),
+            ]),
+        ));
+        // Witness 1: KB Universal Accumulator non-membership
+        witnesses.add(Witness::KBUniAccumulatorNonMembership(KBUniNonMembership {
+            element: cred_id,
+            witness: non_mem_witness.clone(),
+        }));
+
+        let proof_spec = ProofSpec::new(statements, meta_statements, vec![], None);
+        proof_spec.validate().expect("Invalid proof spec");
+
+        let proof = Proof::new::<StdRng, Blake2b512>(
+            &mut setup.rng,
+            proof_spec,
+            witnesses,
+            None,
+            Default::default(),
+        )
+        .expect("Failed to create non-revocation proof")
+        .0;
+
+        Self { proof }
+    }
+
+    /// Verify that the non-revocation proof is valid.
+    pub fn verify(&self, setup: &PublicSetup, issuer_pk: &PublicKeyG2<Bls12_381>) {
+        let statements = Self::verifier_statements(setup, issuer_pk);
+        let meta_statements = Self::meta_statements();
+
+        let proof_spec = ProofSpec::new(statements, meta_statements, vec![], None);
+
+        self.proof
+            .clone()
+            .verify::<StdRng, Blake2b512>(
+                &mut StdRng::seed_from_u64(0),
+                proof_spec,
+                None,
+                Default::default(),
+            )
+            .expect("Non-revocation proof verification failed");
+    }
+
+    /// Create prover statements for non-revocation proof.
+    fn prover_statements(setup: &PublicSetup) -> Statements<Bls12_381> {
+        let mut statements = Statements::<Bls12_381>::new();
+        // Statement 0: BBS signature proof of knowledge
+        statements.add(
+            PoKBBSSignatureG1Prover::<Bls12_381>::new_statement_from_params(
+                setup.sig_params_g1.clone(),
+                BTreeMap::new(), // No revealed messages
+            ),
+        );
+        // Statement 1: KB Universal Accumulator non-membership proof
+        // Prover only needs the accumulator non-mem value
+        statements.add(KBUniversalAccumulatorNonMembershipCDHProver::new(
+            *setup.accumulator.non_mem.value(),
+        ));
+        statements
+    }
+
+    /// Create verifier statements for non-revocation proof.
+    fn verifier_statements(
+        setup: &PublicSetup,
+        issuer_pk: &PublicKeyG2<Bls12_381>,
+    ) -> Statements<Bls12_381> {
+        let mut statements = Statements::<Bls12_381>::new();
+        // Statement 0: BBS signature verification
+        statements.add(PoKBBSSignatureG1Verifier::new_statement_from_params(
+            setup.sig_params_g1.clone(),
+            issuer_pk.clone(),
+            BTreeMap::new(),
+        ));
+        // Statement 1: KB Universal Accumulator non-membership verification
+        statements.add(
+            KBUniversalAccumulatorNonMembershipCDHVerifier::<Bls12_381>::new_statement_from_params(
+                setup.accum_params.clone(),
+                setup.accum_keypair.public_key.clone(),
+                *setup.accumulator.non_mem.value(),
+            ),
+        );
+        statements
+    }
+
+    /// Create meta statements linking BBS credential ID to accumulator non-member element.
+    fn meta_statements() -> MetaStatements {
+        let mut meta_statements = MetaStatements::new();
+        // Link BBS message[FIELD_CREDENTIAL_ID] to accumulator non-member element
+        meta_statements.add(MetaStatement::WitnessEquality(EqualWitnesses(
+            vec![
+                (0, VerifiedCredential::FIELD_CREDENTIAL_ID), // BBS sig msg at index 5
+                (1, 0), // Accumulator non-member element (first witness component)
             ]
             .into_iter()
             .collect::<BTreeSet<WitnessRef>>(),
