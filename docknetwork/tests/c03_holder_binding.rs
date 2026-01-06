@@ -28,7 +28,6 @@ fn c03_proof_holder() -> Result<(), Box<dyn Error>> {
     stats.mark_proof_create();
 
     // Holder sends the proof to the verifier, which checks it.
-    // TODO: Not sure if we can only do the ECDSA proof - probably this doesn't make sense.
     common.verifier_check_proofs(&message, &presentation_closed, &proof);
     stats.mark_verify();
 

@@ -155,3 +155,5 @@ if __name__ == "__main__":
     sign_store_fixed_device(
         KEY_DIR, "bob", bob, key_private_issuer, keys_device_bob, revocation_list
     )
+
+    update_constants()
