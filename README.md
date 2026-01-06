@@ -51,6 +51,14 @@ TLDR:
 - Run `devbox run noir-all` and `devbox run dock-all` to run
   the examples on your machine
 
+## Running with Docker
+
+Alternatively, you can use our pre-built Docker image:
+
+```bash
+docker run -ti ghcr.io/eid-privacy/zkp-pocs devbox run all
+```
+
 # Summary of Runtimes
 
 Here is a summary of how long the proofs and verifications take

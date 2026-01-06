@@ -8,7 +8,8 @@
     "rustup@latest",
     "cargo-nextest@latest",
     "python311Packages.pip@latest",
-    "jq@latest"
+    "jq@latest",
+    "gnumake@latest"
   ],
   "shell": {
     "init_hook": [
@@ -21,7 +22,8 @@
       "dock-all":   "cd docknetwork && make all",
       "noir-all":   "cd noir && make all",
       "noir-clean": "cd noir && make clean",
-      "all":        "(cd docknetwork && make all) && (cd noir && make all)"
+      "all":        "(cd docknetwork && make all) && (cd noir && make all)",
+      "clean":      "(cd noir && make clean) && (cd docknetwork && make clean)"
     }
   },
   "env": {
