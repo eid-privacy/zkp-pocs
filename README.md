@@ -15,7 +15,8 @@ various proofs for the PoC.
 
 The second PoC uses [noir-lang](https://github.com/noir-lang/noir)
 to work on a fixed-size credential.
-The Barretenberg backend implements a **hyper-Plonk**
+The Barretenberg backend implements a 
+[UltraHONK](https://rknhr-uec.github.io/aztec-protocol-spec/protocol-specs/cryptography/proving-system/overview)
 proof which is optimized for blockchains, but still
 fast enough for our goals.
 
