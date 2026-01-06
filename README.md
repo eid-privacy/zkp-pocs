@@ -6,6 +6,8 @@ electronic identities.
 It is funded by the IP-ICT 101.292 Innolink Grant on
 **Secure and Privacy-Preserving Credentials
 for E-ID**.
+You can find more information in the 
+[MS2 report](https://github.com/eid-privacy/MS2-Minimal-Viable-Project/releases/download/2026-01-06_12-45/101.292-IP-ICT-ms2-report-2026-01-06_12-45.pdf).
 
 The first PoC is created using the 
 [docknetwork/crypto](https://github.com/docknetwork/crypto)
