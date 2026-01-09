@@ -2,8 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
   "packages": [
     "python@3.11",
-    "github:eid-privacy/flakes#noir-versions.v1_0_0-beta_17",
-    "github:eid-privacy/flakes#barretenberg-versions.v2_1_8",
+    "github:eid-privacy/flakes#noir-versions.v1_0_0-beta_13",
+    "github:eid-privacy/flakes#barretenberg-versions.v1_2_1",
     "time@latest",
     "rustup@latest",
     "cargo-nextest@latest",
