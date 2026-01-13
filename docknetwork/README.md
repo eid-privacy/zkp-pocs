@@ -14,3 +14,6 @@ devbox run dock-all
 ```
 
 The resulting time will be stored in a file called `stats.csv`.
+
+- 2026-01-13: The tests are now run with `--release`, which improves the proving/verification
+time by a factor of 15.

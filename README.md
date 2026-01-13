@@ -90,3 +90,12 @@ our partners to get feedback on these PoCs.
 If they validate the approach, we will work on improving the
 proving system from Noir to tilt the balance away from
 long proving time to longer verification time.
+
+# CHANGELOG
+
+- 2026/01/13
+
+Patrick Amrein from Ubique suggested to use `--release` in the `cargo test`
+for the docknetwork simulations.
+This improved complete proving times for docknetwork by a factor of 15!
+Now it is faster in all aspects than noir, which makes more sense.
