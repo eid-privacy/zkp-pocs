@@ -28,10 +28,10 @@ prove_circuit(){
 	cat $PROOF_DIR/proof | wc -c >> stats.txt
 }
 
-echo "test,acir,circuit,create_vk,create_proof,verify,proof_size" > stats.csv
+echo "test,acir,circuit,create_vk,create_proof,verify,proof_size" > stats_noir.csv
 
 for circuit in c??_*; do
     echo "$circuit" > stats.txt
     prove_circuit $circuit
-    paste -sd, stats.txt >> stats.csv
+    paste -sd, stats.txt >> stats_noir.csv
 done

@@ -9,7 +9,7 @@ repeated:
 	rm -f stats_coll.csv
 	for a in $$( seq 10 ); do \
 	  $(MAKE) all; \
-	  cat stats.csv >> stats_coll.csv; \
+	  cat stats_noir.csv >> stats_coll.csv; \
 	done
 
 clean:

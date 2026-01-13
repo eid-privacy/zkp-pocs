@@ -2,5 +2,5 @@ target/
 Prover*toml
 /credentials
 /proofs
-stats.*
+stats*
 eid/src/constants.nr
