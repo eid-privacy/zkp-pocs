@@ -4,4 +4,4 @@ all:
 
 clean:
 	rm stats*
-	rm -rf target
+	rm -rf target/*

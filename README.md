@@ -41,7 +41,7 @@ in the revocation list signed by a publicly known key
 
 For more details, please have a look at our [REPORT].
 
-# Running the Examples
+# Running the Examples with DevBox
 
 You can follow the instructions for the [Noir Prover](noir/README.md)
 or the [Docknetwork Prover](docknetwork/README.md).
@@ -53,10 +53,45 @@ TLDR:
 
 ## Running with Docker
 
-Alternatively, you can use our pre-built Docker image:
+Alternatively, you can use our pre-built Docker image using the Make targets from the root of this repository:
 
+1. To build the image run:
 ```bash
-docker run -ti ghcr.io/eid-privacy/zkp-pocs devbox run all
+make build
+```
+2. To clean the docker image run:
+```bash
+make clean-image
+```
+
+3. To run all docknetwork tests:
+```bash
+make dock-all
+```
+
+4. To run all noir tests:
+```bash
+make noir-all
+```
+
+5. To run all tests:
+```bash
+make all
+```
+
+6. To clean all build artifacts:
+```bash
+make clean
+```
+
+7. To clean only noir build artifacts:
+```bash
+make noir-clean
+```
+
+8. To spawn an interactive shell inside the container:
+```bash
+make debug-shell
 ```
 
 # Summary of Runtimes
