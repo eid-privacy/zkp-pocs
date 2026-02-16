@@ -1,0 +1,10 @@
+.git
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.DS_Store
+**/target/
+**/build/
+**/.venv/
+**/.nargo/
+**/node_modules/

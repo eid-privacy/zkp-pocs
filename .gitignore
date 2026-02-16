@@ -1,4 +1,5 @@
 target/
 .devbox/
 .venv/
-
+.cargo-cache/
+.sccache/
