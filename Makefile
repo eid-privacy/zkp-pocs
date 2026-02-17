@@ -23,6 +23,10 @@ define run_in_container
 $(DOCKER_RUN_COMMAND) bash -c 'set -Eeuo pipefail; cd /app; '"$(1)"
 endef
 
+.PHONY: test-remote
+test-remote:
+	./noir/scripts/time_remote_proof.sh
+
 .PHONY: dock-all
 dock-all:
 	$(call run_in_container, cd docknetwork && make all)
@@ -30,6 +34,7 @@ dock-all:
 .PHONY: noir-all
 noir-all:
 	$(call run_in_container, cd noir && make all)
+
 .PHONY: noir-clean
 noir-clean:
 	$(call run_in_container, cd noir && make clean)

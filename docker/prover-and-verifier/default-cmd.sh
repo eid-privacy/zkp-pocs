@@ -1,0 +1,1 @@
+bash -lc "nargo --version && echo 'Container ready.'"
