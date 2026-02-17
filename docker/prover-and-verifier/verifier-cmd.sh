@@ -1,0 +1,1 @@
+cd /app/noir && uvicorn scripts.server.verifier-server:app --host 0.0.0.0 --port 8080

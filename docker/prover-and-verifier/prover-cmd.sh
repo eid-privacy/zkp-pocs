@@ -1,0 +1,1 @@
+cd /app/noir && make setup-proof && uvicorn scripts.server.prover-server:app --host 0.0.0.0 --port 8000

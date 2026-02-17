@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  verifier:
+    image: zkp-pocs:latest
+    container_name: verifier
+    user: "10001:10001"
+    working_dir: /app/noir
+    command: ["sh", "/usr/local/bin/verifier-cmd.sh"]
+    ports:
+      - "8080:8080"
+  
+  prover:
+    image: zkp-pocs:latest
+    container_name: prover
+    user: "10001:10001"
+    working_dir: /app/noir
+    command: ["sh", "/usr/local/bin/prover-cmd.sh"]
+    ports:
+      - "8000:8000"
+

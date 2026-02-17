@@ -51,7 +51,7 @@ TLDR:
 - Run `devbox run noir-all` and `devbox run dock-all` to run
   the examples on your machine
 
-## Running with Docker
+# Running the Examples with Docker
 
 Alternatively, you can use our pre-built Docker image using the Make targets from the root of this repository:
 
@@ -93,6 +93,40 @@ make noir-clean
 ```bash
 make debug-shell
 ```
+
+# Running the Verifier and Prover as Separate Services with Docker Compose
+We also provide a way to run the prover and verifier as separate services using Docker Compose.
+
+1. To start the services run:
+```bash
+docker-compose up
+```
+2. To stop the services run:
+```bash
+docker-compose down
+```
+
+You can call the prover service at `http://localhost:8000/prove` with a POST request containing the `circuit` as form data to generate a proof and verify it with the verifier service. (Available circuits: `c03_holder_binding`, `c04_issuer_signature`, `c05_age_verification`, `c06_non_revocation`, `c09_full_proof`).
+The endpoint also takes an optional `scheme` parameter to specify the proving scheme to use (e.g., `ultra_honk`, `plonk`, etc.). If not provided, it will use the default scheme specified in the environment variable `DEFAULT_SCHEME`.
+
+For example:
+```bash
+curl -X POST http://localhost:8000/prove -H "Content-Type: application/x-www-form-urlencoded" -d "circuit=c05_age_verification"
+```
+
+You can also directly call the verifier service at `http://localhost:8080/verify` with a POST request containing the `proof`, `vk`, and `public_inputs` as form data to verify a proof. The endpoint also takes an optional `scheme` parameter to specify the proving scheme used for the proof. If not provided, it will use the default scheme specified in the environment variable `DEFAULT_SCHEME`.
+
+For example:
+```bash
+curl -X POST http://localhost:8080/verify -F "proof=@path/to/proof" -F "vk=@path/to/vk" -F "public_inputs=@path/to/public_inputs"
+```
+
+You can run time testing on the prover and verifier services by running:
+```bash
+make test-remote
+```
+
+The results will be stored in `noir/stats_remote_proof_times.csv`.
 
 # Summary of Runtimes
 
