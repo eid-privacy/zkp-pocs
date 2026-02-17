@@ -81,7 +81,7 @@ fn main(
 
     // Step 3: Check the credential ID bit
     let revocation_byte = revocation_list[16 + revocation_index / 8];
-    let revocation_bit = 1 << (revocation_index % 8);
+    let revocation_bit = 1 << (revocation_index % 8) as u8;
     assert(revocation_byte & revocation_bit as u8 == 0);
 
     // Step 4: Verify the freshness of the list

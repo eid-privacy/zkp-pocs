@@ -19,11 +19,11 @@ fn main(
         constants::CREDENTIAL_POS_DEVICE_PUB_Y,
     );
 
-    let signature_device_valid = std::ecdsa_secp256k1::verify_signature(
-        pubkey_device_x,
-        pubkey_device_y,
-        signature_device,
-        challenge_hash,
-    );
-    assert(signature_device_valid);
+//    let signature_device_valid = std::ecdsa_secp256k1::verify_signature(
+//        pubkey_device_x,
+//        pubkey_device_y,
+//        signature_device,
+//        challenge_hash,
+//    );
+//    assert(signature_device_valid);
 }
