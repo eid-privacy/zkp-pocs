@@ -2,7 +2,7 @@
 
 DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
-for circuit in c??_*; do
+for circuit in [cd]??_*; do
     if [ -f $circuit/Nargo.toml ]; then
       echo "Executing circuit $circuit"
       (cd $circuit && pwd && $DIR/time_real.sh nargo execute -p Prover_0.toml)

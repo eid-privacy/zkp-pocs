@@ -19,5 +19,5 @@ repeated:
 
 clean:
 	rm -rf credentials proofs stats* eid/src/constants.nr
-	find c??_* -name target | xargs rm -rf
-	find c??_* -name "Prover*toml" | xargs rm -rf
+	find [dc]??_* -name target | xargs rm -rf
+	find [dc]??_* -name "Prover*toml" | xargs rm -rf

@@ -30,7 +30,7 @@ prove_circuit(){
 
 echo "test,acir,circuit,create_vk,create_proof,verify,proof_size" > stats_noir.csv
 
-for circuit in c??_*; do
+for circuit in [cd]??_*; do
     echo "$circuit" > stats.txt
     prove_circuit $circuit
     paste -sd, stats.txt >> stats_noir.csv
