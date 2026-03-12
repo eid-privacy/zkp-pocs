@@ -3,7 +3,8 @@ use sha256::sha256_var;
 
 mod constants;
 use constants::{
-    DISCLOSURE_MAX_LEN, DOB_CLAIM_NAME, DOB_SALT_MAX_LEN, DOB_VALUE_MAX_LEN, PAYLOAD_MAX_LEN,
+    COORD_BASE64_LEN, DISCLOSURE_MAX_LEN, DOB_CLAIM_NAME, DOB_SALT_MAX_LEN, DOB_VALUE_MAX_LEN,
+    MIN_AGE_YEARS, PAYLOAD_MAX_LEN,
 };
 
 global ENCODED_PAYLOAD_MAX_LEN: u32 = (PAYLOAD_MAX_LEN * 4 + 2) / 3;
@@ -18,6 +19,8 @@ global ENCODED_HEADER: [u8; ENCODED_HEADER_LEN] = [
 global SIGNING_INPUT_MAX_LEN: u32 = ENCODED_HEADER_LEN + 1 + ENCODED_PAYLOAD_MAX_LEN;
 
 global ASCII_DOT: u8 = 46;
+global ASCII_X: u8 = 120; // 'x'
+global ASCII_Y: u8 = 121; // 'y'
 
 fn build_dob_disclosure<let S: u32, let V: u32>(
     salt: BoundedVec<u8, S>,
@@ -25,13 +28,13 @@ fn build_dob_disclosure<let S: u32, let V: u32>(
 ) -> BoundedVec<u8, DISCLOSURE_MAX_LEN> {
     // Builds: ["salt","birth_date","value"]
     let mut disclosure: BoundedVec<u8, DISCLOSURE_MAX_LEN> = BoundedVec::new();
-    disclosure.extend_from_array([91, 34]);
+    disclosure.extend_from_array("[\"".as_bytes());
     disclosure.extend_from_bounded_vec(salt);
-    disclosure.extend_from_array([34, 44, 34]);
+    disclosure.extend_from_array("\",\"".as_bytes());
     disclosure.extend_from_array(DOB_CLAIM_NAME);
-    disclosure.extend_from_array([34, 44, 34]);
+    disclosure.extend_from_array("\",\"".as_bytes());
     disclosure.extend_from_bounded_vec(value);
-    disclosure.extend_from_array([34, 93]);
+    disclosure.extend_from_array("\"]".as_bytes());
     disclosure
 }
 
@@ -39,68 +42,52 @@ fn extract_coord_for_key<let N: u32>(
     payload_storage: [u8; N],
     key_offset: u32,
     key_ascii: u8,
-) -> [u8; 43] {
+) -> [u8; COORD_BASE64_LEN] {
     // Expects the JSON pattern "k":"<43 base64url chars> where k is key_ascii
     let expected_prefix: [u8; 5] = [34, key_ascii, 34, 58, 34];
     for i in 0..5 {
         assert(payload_storage[key_offset + i] == expected_prefix[i], "Key not found");
     }
 
-    let mut coord_bytes: [u8; 43] = [0; 43];
-    for i in 0..43 {
+    let mut coord_bytes: [u8; COORD_BASE64_LEN] = [0; COORD_BASE64_LEN];
+    for i in 0..COORD_BASE64_LEN {
         coord_bytes[i] = payload_storage[key_offset + 5 + i];
     }
     coord_bytes
 }
 
-fn parse_digit(data: [u8; DOB_VALUE_MAX_LEN], idx: u32) -> u32 {
-    let byte = data[idx];
-    assert((byte >= 48) & (byte <= 57), "input is not a digit");
-    (byte - 48) as u32
+fn birth_date_as_int(value: BoundedVec<u8, DOB_VALUE_MAX_LEN>) -> u32 {
+    // YYYY-MM-DD: dashes at indices 4 and 7 are skipped
+    let d = value.storage();
+    (d[0] as u32 - 48) * 10_000_000
+        + (d[1] as u32 - 48) * 1_000_000
+        + (d[2] as u32 - 48) * 100_000
+        + (d[3] as u32 - 48) * 10_000
+        + (d[5] as u32 - 48) * 1_000
+        + (d[6] as u32 - 48) * 100
+        + (d[8] as u32 - 48) * 10
+        + (d[9] as u32 - 48)
 }
 
-fn parse_birth_date(value: BoundedVec<u8, DOB_VALUE_MAX_LEN>) -> [u32; 3] {
-    assert(value.len() == 10, "birth_date must be of length 10 -> YYYY-MM-DD");
-    let date = value.storage();
-    assert(date[4] == 45, "excepted separator to be '-' -> birth_date must be YYYY-MM-DD");
-    assert(date[7] == 45, "excepted separator to be '-' -> birth_date must be YYYY-MM-DD");
-
-    let year = parse_digit(date, 0) * 1000
-        + parse_digit(date, 1) * 100
-        + parse_digit(date, 2) * 10
-        + parse_digit(date, 3);
-    let month = parse_digit(date, 5) * 10 + parse_digit(date, 6);
-    let day = parse_digit(date, 8) * 10 + parse_digit(date, 9);
-
-    assert((month >= 1) & (month <= 12), "birth_date month out of range");
-
-    let days_in_month: [u32; 13] = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    let is_leap = ((year % 4) == 0) & (((year % 100) != 0) | ((year % 400) == 0));
-    let max_day = days_in_month[month] + if (month == 2) & is_leap { 1 } else { 0 };
-    assert((day >= 1) & (day <= max_day), "birth_date day out of range");
-
-    [year, month, day]
-}
-
-fn is_at_least_25_years_old(birth_date: [u32; 3], now_date: [u32; 3]) -> bool {
-    let threshold = (birth_date[0] + 25) * 10000 + birth_date[1] * 100 + birth_date[2];
-    let now = now_date[0] * 10000 + now_date[1] * 100 + now_date[2];
-    now >= threshold
+fn is_at_least_25_years_old(birth_date: u32, now_date: u32) -> bool {
+    now_date >= birth_date + MIN_AGE_YEARS * 10_000
 }
 
 fn main(
+    // Private inputs
     payload: BoundedVec<u8, PAYLOAD_MAX_LEN>,
     jwt_signature: [u8; 64],
-    issuer_pub_x: pub [u8; 32],
-    issuer_pub_y: pub [u8; 32],
     dob_salt: BoundedVec<u8, DOB_SALT_MAX_LEN>,
     dob_value: BoundedVec<u8, DOB_VALUE_MAX_LEN>,
     dob_sd_offset: u32,
     x_offset: u32,
     y_offset: u32,
-    now_date: pub [u32; 3],
-    challenge_nonce: pub [u8; 32],
     device_signature: [u8; 64],
+    // Public inputs
+    issuer_pub_x: pub [u8; 32],
+    issuer_pub_y: pub [u8; 32],
+    now_date: pub u32,
+    challenge_nonce: pub [u8; 32],
 ) {
     // Constructing the signing input
     let encoded_payload = BASE64_URL_ENCODER::encode_var(payload);
@@ -121,23 +108,25 @@ fn main(
     let dob_disclosure = build_dob_disclosure(dob_salt, dob_value);
     let encoded_disclosure = BASE64_URL_ENCODER::encode_var(dob_disclosure);
 
-    let expected_digest: [u8; 43] = BASE64_URL_ENCODER::encode(sha256_var(
+    let expected_digest: [u8; COORD_BASE64_LEN] = BASE64_URL_ENCODER::encode(sha256_var(
         encoded_disclosure.storage(),
         encoded_disclosure.len(),
     ));
 
     let payload_storage = payload.storage();
-    for i in 0..43 {
+    for i in 0..COORD_BASE64_LEN {
         assert(
             payload_storage[dob_sd_offset + i] == expected_digest[i],
             "DOB disclosure digest mismatch",
         );
     }
-    let birth_date = parse_birth_date(dob_value);
-    assert(is_at_least_25_years_old(birth_date, now_date), "User must be 25 or older");
+    assert(
+        is_at_least_25_years_old(birth_date_as_int(dob_value), now_date),
+        "User must be 25 or older",
+    );
 
-    let device_key_x_bytes = extract_coord_for_key(payload_storage, x_offset, 120);
-    let device_key_y_bytes = extract_coord_for_key(payload_storage, y_offset, 121);
+    let device_key_x_bytes = extract_coord_for_key(payload_storage, x_offset, ASCII_X);
+    let device_key_y_bytes = extract_coord_for_key(payload_storage, y_offset, ASCII_Y);
 
     let device_pub_x: [u8; 32] = BASE64_URL_DECODER::decode(device_key_x_bytes);
     let device_pub_y: [u8; 32] = BASE64_URL_DECODER::decode(device_key_y_bytes);
@@ -276,7 +265,7 @@ fn test_sdjwt_verification() {
     let dob_value_bytes: [u8; 10] = [49, 57, 56, 56, 45, 48, 54, 45, 49, 57]; // 1988-06-19
     let dob_value = BoundedVec::<u8, DOB_VALUE_MAX_LEN>::from(dob_value_bytes);
 
-    let now_date: [u32; 3] = [2024, 1, 1];
+    let now_date: u32 = 20240101;
 
     let challenge_nonce: [u8; 32] = [
         207, 158, 213, 45, 0, 176, 56, 230, 100, 221, 242, 129, 246, 31, 52, 192, 7, 253, 22, 114,
@@ -293,32 +282,28 @@ fn test_sdjwt_verification() {
     main(
         payload,
         jwt_signature,
-        issuer_x,
-        issuer_y,
         dob_salt,
         dob_value,
         745,
         1471,
         1521,
+        device_signature,
+        issuer_x,
+        issuer_y,
         now_date,
         challenge_nonce,
-        device_signature,
     )
 }
 
 #[test]
 fn test_age_gate_exactly_25_on_birthday() {
-    let birth_date: [u32; 3] = [1988, 6, 19];
-    let now_date: [u32; 3] = [2013, 6, 19];
-    assert(is_at_least_25_years_old(birth_date, now_date), "Expected user to be 25 on birthday");
+    assert(is_at_least_25_years_old(19880619, 20130619), "Expected user to be 25 on birthday");
 }
 
 #[test]
 fn test_age_gate_one_day_before_25_fails() {
-    let birth_date: [u32; 3] = [1988, 6, 19];
-    let now_date: [u32; 3] = [2013, 6, 18];
     assert(
-        !is_at_least_25_years_old(birth_date, now_date),
+        !is_at_least_25_years_old(19880619, 20130618),
         "Expected user to be under 25 one day before birthday",
     );
 }

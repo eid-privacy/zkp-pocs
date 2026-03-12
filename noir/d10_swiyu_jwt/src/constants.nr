@@ -15,4 +15,10 @@ pub global DOB_SALT_MAX_LEN: u32 = 32;
 pub global DOB_VALUE_MAX_LEN: u32 = 16;
 
 /// DOB claim name in SD-JWT disclosure format. Swiss eID uses "birth_date".
-pub global DOB_CLAIM_NAME: [u8; 10] = [98, 105, 114, 116, 104, 95, 100, 97, 116, 101];
+pub global DOB_CLAIM_NAME: [u8; 10] = "birth_date".as_bytes();
+
+/// base64url-encoded length of a 32-byte value: ceil(32 * 4 / 3).
+pub global COORD_BASE64_LEN: u32 = 43;
+
+/// Minimum age in years required for the age gate.
+pub global MIN_AGE_YEARS: u32 = 25;
