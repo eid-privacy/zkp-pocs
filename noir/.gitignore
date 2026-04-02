@@ -1,5 +1,5 @@
 target/
-Prover*toml
+Prover_*toml
 /credentials
 /proofs
 stats*
