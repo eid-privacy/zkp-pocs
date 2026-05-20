@@ -275,7 +275,6 @@ fn test_sdjwt_verification() {
     let dob_value_bytes: [u8; 10] = [49, 57, 56, 56, 45, 48, 54, 45, 49, 57]; // 1988-06-19
     let dob_value = BoundedVec::<u8, DOB_VALUE_MAX_LEN>::from(dob_value_bytes);
 
-    // base64url({"typ":"JWT","alg":"ES256"})
     let encoded_header_bytes: [u8; 36] = [
         101, 121, 74, 48, 101, 88, 65, 105, 79, 105, 74, 75, 86, 49, 81, 105, 76, 67, 74, 104, 98, 71,
         99, 105, 79, 105, 74, 70, 85, 122, 73, 49, 78, 105, 74, 57,

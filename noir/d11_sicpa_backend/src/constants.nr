@@ -23,4 +23,5 @@ pub global COORD_BASE64_LEN: u32 = 43;
 /// Minimum age in years required for the age gate.
 pub global MIN_AGE_YEARS: u32 = 25;
 
+/// Maximum length of the encoded JWT header in bytes.
 pub global ENCODED_HEADER_MAX_LEN: u32 = 128;
