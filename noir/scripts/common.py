@@ -3,7 +3,9 @@ import json
 import os
 from datetime import datetime
 
-from coincurve import PrivateKey
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
 REVOCATION_LIST_IDS = 1024
 CREDENTIAL_LEN_FIRST = 32
@@ -21,6 +23,18 @@ CREDENTIAL_POS_CRED_ID = CREDENTIAL_POS_DEVICE_PUB_Y + CREDENTIAL_LEN_DEVICE_PUB
 CREDENTIAL_LEN = CREDENTIAL_POS_CRED_ID + CREDENTIAL_LEN_CRED_ID
 
 TIME_NOW = int(datetime(2025, 11, 6, 18, 20).timestamp())
+
+# secp256r1 (P-256) curve order
+_P256_ORDER = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
+
+
+def sign_p256(private_key, message: bytes) -> bytes:
+    """Sign message with secp256r1, returning low-S normalized 64-byte r||s."""
+    der_sig = private_key.sign(message, ec.ECDSA(hashes.SHA256()))
+    r, s = decode_dss_signature(der_sig)
+    if s > _P256_ORDER // 2:
+        s = _P256_ORDER - s
+    return r.to_bytes(32, "big") + s.to_bytes(32, "big")
 
 
 def parse_args(description, circuit=False):
@@ -48,14 +62,16 @@ def parse_args(description, circuit=False):
 
 
 def load_keys(dirname, filename):
-    """Load issuer keys from JSON file."""
+    """Load keys from JSON file."""
     try:
         with open(os.path.join(dirname, filename), "r") as f:
             keys = json.load(f)
 
         private_key_bytes = bytes.fromhex(keys["private_key"])
-        keys["private_key_obj"] = PrivateKey(private_key_bytes)
-        keys["public_key_obj"] = keys["private_key_obj"].public_key
+        private_value = int.from_bytes(private_key_bytes, "big")
+        private_key_obj = ec.derive_private_key(private_value, ec.SECP256R1())
+        keys["private_key_obj"] = private_key_obj
+        keys["public_key_obj"] = private_key_obj.public_key()
 
         return keys
 

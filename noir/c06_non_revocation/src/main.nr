@@ -42,7 +42,7 @@ fn main(
         sha256_var(revocation_list, REVOCATION_LIST_LENGTH_WO_SIG).into();
 
     // Step 6: Verify ECDSA signature on the revocation list
-    let signature_valid = std::ecdsa_secp256k1::verify_signature(
+    let signature_valid = std::ecdsa_secp256r1::verify_signature(
         pubkey_issuer_x,
         pubkey_issuer_y,
         slice(revocation_list, REVOCATION_LIST_LENGTH_WO_SIG),
