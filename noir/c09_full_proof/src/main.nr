@@ -26,7 +26,7 @@ fn main(
         constants::CREDENTIAL_POS_DEVICE_PUB_Y,
     );
 
-    let signature_device_valid = std::ecdsa_secp256k1::verify_signature(
+    let signature_device_valid = std::ecdsa_secp256r1::verify_signature(
         pubkey_device_x,
         pubkey_device_y,
         signature_device,
@@ -40,7 +40,7 @@ fn main(
         sha256_var(credential_string.as_bytes(), constants::CREDENTIAL_LEN).into();
 
     // Step 2: Verify ECDSA signature on the credential hash
-    let signature_valid = std::ecdsa_secp256k1::verify_signature(
+    let signature_valid = std::ecdsa_secp256r1::verify_signature(
         pubkey_issuer_x,
         pubkey_issuer_y,
         signature_issuer,
@@ -93,7 +93,7 @@ fn main(
         sha256_var(revocation_list, eid::REVOCATION_LIST_LENGTH_WO_SIG).into();
 
     // Step 6: Verify ECDSA signature on the revocation list
-    let signature_valid = std::ecdsa_secp256k1::verify_signature(
+    let signature_valid = std::ecdsa_secp256r1::verify_signature(
         pubkey_issuer_x,
         pubkey_issuer_y,
         slice(revocation_list, eid::REVOCATION_LIST_LENGTH_WO_SIG),

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 import glob
-import hashlib
 import json
 import os
 
 import common
 import toml
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 
 
 def prover_fixed(time_now, pubkey_issuer, credentials, dirname):
@@ -28,31 +31,17 @@ def prover_fixed(time_now, pubkey_issuer, credentials, dirname):
 
 def verify_credential(cred):
     cred_bytes = cred["credential_string"].encode("utf-8")
-    message_hash = hashlib.sha256(cred_bytes).digest()
     signature_bytes = bytes.fromhex(cred["signature_issuer"])
     print(f"Credential: {cred['credential_string'][0:5]}...")
-    print(f"  Hash: {message_hash.hex()}")
 
-    # Verify signature cryptographically
     r = int.from_bytes(signature_bytes[:32], "big")
     s = int.from_bytes(signature_bytes[32:], "big")
-
-    # Convert compact signature (r||s) to DER format for verification
-    def encode_der_integer(value):
-        """Encode an integer as DER format"""
-        value_bytes = value.to_bytes(32, "big").lstrip(b"\x00") or b"\x00"
-        if value_bytes[0] & 0x80:  # High bit set, need padding
-            value_bytes = b"\x00" + value_bytes
-        return bytes([0x02, len(value_bytes)]) + value_bytes
-
-    r_der = encode_der_integer(r)
-    s_der = encode_der_integer(s)
-    der_sig = bytes([0x30, len(r_der) + len(s_der)]) + r_der + s_der
+    der_sig = encode_dss_signature(r, s)
 
     try:
-        pubkey.verify(der_sig, message_hash, hasher=None)
+        pubkey.verify(der_sig, cred_bytes, ec.ECDSA(hashes.SHA256()))
         print("  Signature verification: PASSED")
-    except Exception as e:
+    except InvalidSignature as e:
         print(f"  Signature verification: FAILED ({e})")
 
 

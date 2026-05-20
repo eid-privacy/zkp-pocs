@@ -57,12 +57,12 @@ def sign_store_fixed_device(
         + cred_id
     )
     print("Credential string length:", len(credential_string))
-    signature_issuer = key_private_issuer.sign_recoverable(
-        credential_string.encode("utf-8")
-    )[:64]
+    signature_issuer = common.sign_p256(
+        key_private_issuer, credential_string.encode("utf-8")
+    )
     challenge = random.randbytes(32)
     challenge_hash = hashlib.sha256(challenge).digest()
-    signature_device = keys_device["private_key_obj"].sign_recoverable(challenge)[:64]
+    signature_device = common.sign_p256(keys_device["private_key_obj"], challenge)
 
     filename = f"credential_device_fixed_{label}.json"
     with open(os.path.join(dirname, filename), "w") as f:
@@ -94,8 +94,7 @@ def get_revocation_list(start, len, key_private_issuer):
     # revocations = bytes([0xFF]) * (len // 8)
     payload = start_be + time_be + revocations
 
-    # Sign the payload with issuer private key and truncate to 64 bytes
-    signature = key_private_issuer.sign_recoverable(payload)[:64]
+    signature = common.sign_p256(key_private_issuer, payload)
 
     return payload + signature
 

@@ -14,7 +14,7 @@ fn main(
         sha256_var(credential_string.as_bytes(), constants::CREDENTIAL_LEN).into();
 
     // Step 2: Verify ECDSA signature on the credential hash
-    let signature_valid = std::ecdsa_secp256k1::verify_signature(
+    let signature_valid = std::ecdsa_secp256r1::verify_signature(
         pubkey_issuer_x,
         pubkey_issuer_y,
         signature_issuer,
