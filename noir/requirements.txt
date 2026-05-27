@@ -9,5 +9,4 @@ jwcrypto==1.5.7
 pycparser==3.0
 PyYAML==6.0.3
 sd-jwt==0.10.4
-tomli_w==1.2.0
 typing_extensions==4.15.0

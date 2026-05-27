@@ -33,7 +33,7 @@ from sd_jwt.common import SDObj
 from sd_jwt.issuer import SDJWTIssuer
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization, hashes
-import tomli_w
+import toml
 import secrets
 import hashlib
 
@@ -228,7 +228,7 @@ def write_toml(filename: str) -> None:
         "challenge_nonce": list(nonce_hash),
     }
     with open(filename, mode="w", encoding="utf-8") as f:
-        f.write(tomli_w.dumps(data))
+        f.write(toml.dumps(data))
 
 
 if __name__ == "__main__":
