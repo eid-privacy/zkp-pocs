@@ -134,7 +134,7 @@ Here is a summary of how long the proofs and verifications take
 on a MacBook Pro Apple M2 Max from 2023.
 All times are in seconds.
 
-| Docknetwork test              | setup [s] | create_proof [s] | verify [s] | proof_size [s] |
+| Docknetwork test              | setup [s] | create_proof [s] | verify [s] | proof_size [B] |
 |------------------------------|-------|--------------|--------|------------|
 | c03_proof_holder             | 0.197 | 6.622        | 7.921  | 186429     |
 | c04_proof_credential         | 0.158 | 0.031        | 0.052  | 570        |
@@ -143,13 +143,17 @@ All times are in seconds.
 | c06_proof_non_revocation     | 0.160 | 0.037        | 0.098  | 760        |
 | c09_proof_full               | 0.172 | 7.125        | 8.515  | 189141     |
 
-| Noir test                    | acir | circuit | create_vk [s] | create_proof [s] | verify [s] | proof_size [s] |
-|-----------------------------|------|---------|-----------|--------------|--------|------------|
-| c03_holder_binding          | 2108 | 41283   | 0.19      | 0.49         | 0.02   | 16224      |
-| c04_issuer_signature        | 535  | 55419   | 0.27      | 0.59         | 0.02   | 16224      |
-| c05_age_verification        | 285  | 3208    | 0.04      | 0.12         | 0.02   | 16224      |
-| c06_non_revocation          | 1024 | 52764   | 0.24      | 0.51         | 0.02   | 16224      |
-| c09_full_proof              | 3224 | 141526  | 0.55      | 1.49         | 0.02   | 16224      |
+<!-- NOIR_STATS_START -->
+<!-- regenerate with: python noir/scripts/update-readme-stats.py -->
+| Noir test            | acir  | circuit | create_vk [s] | create_proof [s] | verify [s] | proof_size [B] |
+|----------------------|-------|---------|---------------|------------------|------------|----------------|
+| c03_holder_binding   | 2108  | 74298   | 0.26          | 0.69             | 0.03       | 16256          |
+| c04_issuer_signature | 535   | 88606   | 0.35          | 0.79             | 0.02       | 16256          |
+| c05_age_verification | 285   | 3247    | 0.03          | 0.10             | 0.02       | 16256          |
+| c06_non_revocation   | 1012  | 85889   | 0.32          | 0.80             | 0.02       | 16256          |
+| c09_full_proof       | 3212  | 240719  | 0.72          | 1.55             | 0.03       | 16256          |
+| d10_swiyu_jwt        | 99891 | 464814  | 1.37          | 2.69             | 0.02       | 16256          |
+<!-- NOIR_STATS_END -->
 
 
 # Future Work

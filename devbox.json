@@ -23,7 +23,8 @@
       "noir-all":   "cd noir && make all",
       "noir-clean": "cd noir && make clean",
       "all":        "(cd docknetwork && make all) && (cd noir && make all)",
-      "clean":      "(cd noir && make clean) && (cd docknetwork && make clean)"
+      "clean":      "(cd noir && make clean) && (cd docknetwork && make clean)",
+      "update-readme": "python noir/scripts/update-readme-stats.py"
     }
   },
   "env": {
