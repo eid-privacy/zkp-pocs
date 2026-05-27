@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Pre-commit hook: run prettier --check on staged files prettier knows about.
+set -euo pipefail
+
+if ! command -v prettier >/dev/null 2>&1; then
+  echo "pre-commit: prettier not found in PATH." >&2
+  echo "Enter the devbox shell (\`devbox shell\`) or install prettier before committing." >&2
+  exit 1
+fi
+
+mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACMR)
+if [ ${#staged[@]} -eq 0 ]; then
+  exit 0
+fi
+
+to_format=()
+for f in "${staged[@]}"; do
+  [ -f "$f" ] || continue
+  if ! prettier --ignore-unknown --check "$f" >/dev/null 2>&1; then
+    to_format+=("$f")
+  fi
+done
+
+if [ ${#to_format[@]} -gt 0 ]; then
+  echo "pre-commit: the following staged files are not formatted with prettier:" >&2
+  printf '  %s\n' "${to_format[@]}" >&2
+  echo >&2
+  echo "Run: prettier --write ${to_format[*]}" >&2
+  echo "Then \`git add\` them and retry the commit." >&2
+  exit 1
+fi
