@@ -120,7 +120,12 @@ The `main` function of our ZKP has the following inputs:
   - the revocation list is fresh (within the validity period) and the
     issuer's signature on `revocation_hash` is valid
 
-## WP10 - Swiyu SD-JWT
+## Demo-10 - Swiyu SD-JWT
+
+Unlike the previous work packages (WP3-WP9), which prove properties of
+a custom fixed-size credential, `Demo-10` and `Demo-11` are not formal
+work packages but experimental demos that exercise the same ideas on
+real-world SD-JWT credentials.
 
 The `d10_swiyu_jwt` circuit applies the same ideas to an actual SD-JWT
 credential obtained from the Swiyu E-ID demo issuer. Instead of the
@@ -155,6 +160,52 @@ The `main` function of our ZKP has the following inputs:
 - Proof
   - the `jwt_signature` is a valid ES256 signature by the issuer over
     `header.payload`
+  - the salted disclosure for `birth_date` hashes to the digest stored
+    at `dob_sd_offset` in the payload's `_sd` array
+  - the `dob_value` corresponds to an age of at least 25 years at
+    `now_date`
+  - the `device_signature` is a valid ES256 signature over the
+    `challenge_nonce` under the device key bound in the `cnf` claim
+
+## Demo-11 - SICPA Backend SD-JWT
+
+The `d11_sicpa_backend` circuit targets the SD-JWT format produced by
+the SICPA backend. It is structurally similar to `Demo-10`, but the
+credential layout differs: the SICPA backend embeds the issuer's
+public key directly in the JWT header, whereas the Swiyu SD-JWT uses
+a generic header and binds the issuer via a Web3-DID in the payload.
+Because the header is no longer constant across credentials, it is
+exposed as a public input rather than reconstructed in the circuit.
+See [`d11_sicpa_backend/README.md`](./d11_sicpa_backend/README.md) for
+how to generate a fresh `Prover.toml` with `create-prover.py`.
+
+The `main` function of our ZKP has the following inputs:
+
+- Secret (only known to the holder):
+  - `payload` — the raw JWT payload (JSON) as a bounded byte vector
+  - `jwt_signature` — issuer ES256 signature over `header.payload`
+  - `dob_salt`, `dob_value` — salt and value of the SD-JWT `birth_date`
+    disclosure
+  - `dob_sd_offset` — offset of the DOB digest in the `_sd` array of
+    the payload
+  - `x_offset`, `y_offset` — offsets of the device public-key X/Y
+    coordinates in the `cnf` claim of the payload
+  - `device_signature` — ES256 signature over the verifier challenge
+- Public (known to the holder and the verifier):
+  - `encoded_header` — base64url-encoded JWT header (carries the
+    issuer's public key in the SICPA format)
+  - `issuer_pub_x`, `issuer_pub_y` — issuer's P-256 public key
+  - `now_date` — current date in `YYYYMMDD` form
+  - `challenge_nonce` — 32-byte challenge from the verifier
+- Calculated in the circuit
+  - the base64url-encoded `header.payload` signing input, formed by
+    joining `encoded_header` and the encoded `payload` with a `.`
+  - the base64url-encoded SD-JWT disclosure for `birth_date` and its
+    sha256 digest
+  - the device public key, base64url-decoded from the `cnf` claim
+- Proof
+  - the `jwt_signature` is a valid ES256 signature by the issuer over
+    `encoded_header.encoded_payload`
   - the salted disclosure for `birth_date` hashes to the digest stored
     at `dob_sd_offset` in the payload's `_sd` array
   - the `dob_value` corresponds to an age of at least 25 years at
