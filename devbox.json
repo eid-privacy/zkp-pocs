@@ -14,7 +14,7 @@
   "shell": {
     "init_hook": [
       ". $VENV_DIR/bin/activate",
-      "pip install -r noir/requirements.txt",
+      "pip install -qr noir/requirements.txt",
       "echo Ensuring npm and python packages are installed",
       "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi"
     ],
