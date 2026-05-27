@@ -5,7 +5,7 @@ DIR="../scripts/"
 CIRCUIT="d11_sicpa_backend"
 BYTECODE="target/$CIRCUIT.json"
 WITNESS="target/$CIRCUIT.gz"
-PROOF_DIR="proofs/$CIRCUIT"
+PROOF_DIR="proof"
 
 echo -e "*** Gates count\n"
 bb gates $SCHEME -b $BYTECODE | jq -r '.functions[0] | "\(.acir_opcodes),\(.circuit_size)"' >> stats.txt
