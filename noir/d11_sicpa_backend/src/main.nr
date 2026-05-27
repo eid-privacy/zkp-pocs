@@ -75,11 +75,6 @@ unconstrained fn join_with_dot(
     signing_input.extend_from_bounded_vec(encoded_header);
     signing_input.push(ASCII_DOT);
     signing_input.extend_from_bounded_vec(encoded_payload);
-    // print string in signing_input for debugging
-    let signing_input_str = signing_input.storage();
-    let signing_input_len = signing_input.len();
-    println(f"Signing Input: {signing_input_str}");
-    println(f"Signing Input Length: {signing_input_len}");
     signing_input
 }
 
