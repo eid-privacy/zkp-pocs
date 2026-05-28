@@ -9,7 +9,7 @@ services:
     command: ["sh", "/usr/local/bin/verifier-cmd.sh"]
     ports:
       - "8080:8080"
-  
+
   prover:
     image: zkp-pocs:latest
     container_name: prover
@@ -18,4 +18,3 @@ services:
     command: ["sh", "/usr/local/bin/prover-cmd.sh"]
     ports:
       - "8000:8000"
-

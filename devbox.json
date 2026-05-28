@@ -9,21 +9,23 @@
     "cargo-nextest@latest",
     "python311Packages.pip@latest",
     "jq@latest",
-    "gnumake@latest"
+    "gnumake@latest",
+    "nodePackages.prettier@latest"
   ],
   "shell": {
     "init_hook": [
       ". $VENV_DIR/bin/activate",
       "pip install -qr noir/requirements.txt",
       "echo Ensuring npm and python packages are installed",
-      "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi"
+      "if [ -z \"$( find $RUSTUP_HOME | grep toolchains/stable )\" ]; then rustup default stable; fi",
+      "git config core.hooksPath .githooks"
     ],
     "scripts": {
-      "dock-all":   "cd docknetwork && make all",
-      "noir-all":   "cd noir && make all",
+      "dock-all": "cd docknetwork && make all",
+      "noir-all": "cd noir && make all",
       "noir-clean": "cd noir && make clean",
-      "all":        "(cd docknetwork && make all) && (cd noir && make all)",
-      "clean":      "(cd noir && make clean) && (cd docknetwork && make clean)",
+      "all": "(cd docknetwork && make all) && (cd noir && make all)",
+      "clean": "(cd noir && make clean) && (cd docknetwork && make clean)",
       "update-readme": "python noir/scripts/update-readme-stats.py"
     }
   },

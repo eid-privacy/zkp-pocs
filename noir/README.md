@@ -16,9 +16,9 @@ It will output the time and size of the proofs created in the file
 For this first PoC, we chose the following formats:
 
 - Credential: a fixed-size credential, where every attribute has a fixed
-size, but can be 0-padded
+  size, but can be 0-padded
 - Signatures: both the issuer and the device signature are done using
-ECDSA over secp256r1
+  ECDSA over secp256r1
 
 # Inputs and Proofs created
 
@@ -71,7 +71,7 @@ The `main` function of our ZKP has the following inputs:
 - Secret (only known to the holder):
   - `credential`
   - `revocation list` with the start-ID, time of signature, bit-list of revoked credentials,
-  and signature from issuer
+    and signature from issuer
 - Public (known to the holder and the verifier):
   - `public key` of the issuer
   - `current date` in seconds since epoch

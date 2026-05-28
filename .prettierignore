@@ -1,0 +1,23 @@
+# Build / cache artefacts
+target/
+**/target/
+.devbox/
+.venv/
+.cargo-cache/
+.sccache/
+.idea/
+.claude/
+**/.claude/
+
+# Lock files and generated data
+devbox.lock
+docknetwork/Cargo.lock
+noir/**/Prover_*.toml
+noir/**/Prover.toml
+noir/credentials/
+noir/d10_swiyu_jwt/data/
+noir/stats_noir.csv
+noir/stats.txt
+
+# Vendored / third-party
+LICENSE.md
