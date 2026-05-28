@@ -146,6 +146,8 @@ The results will be stored in `noir/stats_remote_proof_times.csv`.
 
 # Summary of Runtimes
 
+## MacBook Pro Apple M2 Max
+
 Here is a summary of how long the proofs and verifications take
 on a MacBook Pro Apple M2 Max from 2023.
 All times are in seconds.
@@ -173,6 +175,18 @@ All times are in seconds.
 
 <!-- NOIR_STATS_END -->
 
+## Galaxy A54 5G
+
+Here's the benchmarking for the **proof generation** on a Galaxy A54 5G. All times are in seconds.
+
+| Noir test                   | Average of 100 runs [s] | Best [s]  | Worst [s] |
+|-----------------------------|-------------------------|------ ----|-----------|
+| c03_holder_binding          | 1.975                   | 1.841     | 2.176     |
+| c04_issuer_signature        | 2.428                   | 2.073     | 2.821     |
+| c05_age_verification        | 0.314                   | 0.258     | 0.381     |
+| c06_non_revocation          | 2.645                   | 2.109     | 3.016     |
+| c09_full_proof              | 6.483                   | 5.643     | 6.940     |
+
 # Future Work
 
 For the second half of our grant, we will work together with
@@ -182,6 +196,14 @@ proving system from Noir to tilt the balance away from
 long proving time to longer verification time.
 
 # CHANGELOG
+
+- 2026/04
+
+Added a d10_swiyu_jwt circuit with a full testing of a minimally modified
+Swiyu JWT credential: to create the signature for the holder binding,
+the device public key in the credential had to be updated, which needed
+an update of the issuer signature, which needed an update of the issuer
+identity...
 
 - 2026/01/13
 
