@@ -130,6 +130,8 @@ The results will be stored in `noir/stats_remote_proof_times.csv`.
 
 # Summary of Runtimes
 
+## MacBook Pro Apple M2 Max
+
 Here is a summary of how long the proofs and verifications take
 on a MacBook Pro Apple M2 Max from 2023.
 All times are in seconds.
@@ -155,6 +157,17 @@ All times are in seconds.
 | d10_swiyu_jwt        | 92811 | 453007  | 1.26          | 2.66             | 0.01       | 14656          |
 <!-- NOIR_STATS_END -->
 
+## Galaxy A54 5G
+
+Here's the benchmarking for the **proof generation** on a Galaxy A54 5G. All times are in seconds.
+
+| Noir test                   | Average of 100 runs [s] | Best [s]  | Worst [s] |
+|-----------------------------|-------------------------|------ ----|-----------|
+| c03_holder_binding          | 1.975                   | 1.841     | 2.176     |
+| c04_issuer_signature        | 2.428                   | 2.073     | 2.821     |
+| c05_age_verification        | 0.314                   | 0.258     | 0.381     |
+| c06_non_revocation          | 2.645                   | 2.109     | 3.016     |
+| c09_full_proof              | 6.483                   | 5.643     | 6.940     |
 
 # Future Work
 
