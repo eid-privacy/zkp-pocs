@@ -1,7 +1,7 @@
 [package]
 name = "docknetwork"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 equality_across_groups = { git = "https://github.com/docknetwork/crypto", rev = "9d1b031ecda6b0aa844a79186037f19b73d87495" }
