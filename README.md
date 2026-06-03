@@ -22,24 +22,91 @@ The Barretenberg backend implements a
 proof which is optimized for blockchains, but still
 fast enough for our goals.
 
+The third PoC uses noir-lang on Android with [MoPro]().
+You can find the code in the [zkp-android](https://github.com/eid-privacy/zkp-android)
+repository.
+The benchmark results are in the table below.
+
 # Implemented Proofs
 
 According to our grant, we proposed to implement the following 4
-types of proofs:
+types of proofs on the noir and docknetwork backend:
 
-- WP3 - holder binding: proving that the holder can create a signature
+- WP3 (c03) - holder binding: proving that the holder can create a signature
   on the challenge sent by the verifier, which can be verified by the
   public key stored in the credential
-- WP4 - issuer signature: proving that the holder has access to a
+- WP4 (c04) - issuer signature: proving that the holder has access to a
   credential which has been signed by a publicly known public key
-- WP5 - age verification: proving that the credential of the
+- WP5 (c05) - age verification: proving that the credential of the
   holder has an `birthdate` field with a date 18 years or more in
   the past
-- WP6 - non-revocation: proving that the credential of the
+- WP6 (c06) - non-revocation: proving that the credential of the
   holder has an `id` field which has a corresponding `0` bit set
   in the revocation list signed by a publicly known key
+- c09 - the concatenation of all of the proofs above to create an age
+  proof, including holder binding and non-revocation.
+
+In addition to these proofs for our half-project report, we added the
+following two circuits for the noir backend only:
+
+- d10 - a full Swiyu JWT age proof, with issuer and holder binding, but
+  excluding the non-revocation
+- d11 - a modified proof for the SICPA identity backend, showing the
+  possibility to easily adapt to other systems
 
 For more details, please have a look at our [REPORT].
+
+# Summary of Runtimes
+
+## MacBook Pro Apple M2 Max
+
+Here is a summary of how long the proofs and verifications take
+on a MacBook Pro Apple M2 Max from 2023.
+All times are in seconds.
+
+| Docknetwork test         | setup [s] | create_proof [s] | verify [s] | proof_size [B] |
+| ------------------------ | --------- | ---------------- | ---------- | -------------- |
+| c03_proof_holder         | 0.197     | 6.622            | 7.921      | 186429         |
+| c04_proof_credential     | 0.158     | 0.031            | 0.052      | 570            |
+| c05_proof_predicate      | 0.238     | 0.036            | 0.060      | 538            |
+| c05_proof_predicate_age  | 0.238     | 0.369            | 0.115      | 1952           |
+| c06_proof_non_revocation | 0.160     | 0.037            | 0.098      | 760            |
+| c09_proof_full           | 0.172     | 7.125            | 8.515      | 189141         |
+
+<!-- NOIR_STATS_START -->
+<!-- regenerate with: python noir/scripts/update-readme-stats.py -->
+
+| Noir test            | acir  | circuit | create_vk [s] | create_proof [s] | verify [s] | proof_size [B] |
+| -------------------- | ----- | ------- | ------------- | ---------------- | ---------- | -------------- |
+| c03_holder_binding   | 2108  | 74682   | 0.25          | 0.72             | 0.01       | 14656          |
+| c04_issuer_signature | 535   | 89039   | 0.38          | 0.88             | 0.01       | 14656          |
+| c05_age_verification | 285   | 3227    | 0.02          | 0.10             | 0.01       | 14656          |
+| c06_non_revocation   | 1011  | 86305   | 0.37          | 0.85             | 0.01       | 14656          |
+| c09_full_proof       | 3211  | 242000  | 0.81          | 1.71             | 0.01       | 14656          |
+| d10_swiyu_jwt        | 92811 | 453007  | 1.55          | 3.10             | 0.01       | 14656          |
+| d11_sicpa_backend    | 79719 | 439405  | 1.49          | 2.97             | 0.01       | 14656          |
+
+<!-- NOIR_STATS_END -->
+
+## Galaxy A54 5G
+
+Here's the benchmarking for the **proof generation** on a Galaxy A54 5G. All times are in seconds.
+
+| Noir test            | Average of 100 runs [s] | Best [s] | Worst [s] |
+| -------------------- | ----------------------- | -------- | --------- |
+| c03_holder_binding   | 1.975                   | 1.841    | 2.176     |
+| c04_issuer_signature | 2.428                   | 2.073    | 2.821     |
+| c05_age_verification | 0.314                   | 0.258    | 0.381     |
+| c06_non_revocation   | 2.645                   | 2.109    | 3.016     |
+| c09_full_proof       | 6.483                   | 5.643    | 6.940     |
+
+# Future Work
+
+For the second half of our grant, we will work together with
+our partners to get feedback on these PoCs.
+If they validate the approach, we will work on improving the
+proving system from Noir to tilt the balance away from
+long proving time to longer verification time.
 
 # Running the Examples with DevBox
 
@@ -144,59 +211,12 @@ make test-remote
 
 The results will be stored in `noir/stats_remote_proof_times.csv`.
 
-# Summary of Runtimes
-
-## MacBook Pro Apple M2 Max
-
-Here is a summary of how long the proofs and verifications take
-on a MacBook Pro Apple M2 Max from 2023.
-All times are in seconds.
-
-| Docknetwork test         | setup [s] | create_proof [s] | verify [s] | proof_size [B] |
-| ------------------------ | --------- | ---------------- | ---------- | -------------- |
-| c03_proof_holder         | 0.197     | 6.622            | 7.921      | 186429         |
-| c04_proof_credential     | 0.158     | 0.031            | 0.052      | 570            |
-| c05_proof_predicate      | 0.238     | 0.036            | 0.060      | 538            |
-| c05_proof_predicate_age  | 0.238     | 0.369            | 0.115      | 1952           |
-| c06_proof_non_revocation | 0.160     | 0.037            | 0.098      | 760            |
-| c09_proof_full           | 0.172     | 7.125            | 8.515      | 189141         |
-
-<!-- NOIR_STATS_START -->
-<!-- regenerate with: python noir/scripts/update-readme-stats.py -->
-
-| Noir test            | acir  | circuit | create_vk [s] | create_proof [s] | verify [s] | proof_size [B] |
-| -------------------- | ----- | ------- | ------------- | ---------------- | ---------- | -------------- |
-| c03_holder_binding   | 2108  | 74682   | 0.25          | 0.72             | 0.01       | 14656          |
-| c04_issuer_signature | 535   | 89039   | 0.38          | 0.88             | 0.01       | 14656          |
-| c05_age_verification | 285   | 3227    | 0.02          | 0.10             | 0.01       | 14656          |
-| c06_non_revocation   | 1011  | 86305   | 0.37          | 0.85             | 0.01       | 14656          |
-| c09_full_proof       | 3211  | 242000  | 0.81          | 1.71             | 0.01       | 14656          |
-| d10_swiyu_jwt        | 92811 | 453007  | 1.55          | 3.10             | 0.01       | 14656          |
-| d11_sicpa_backend    | 79719 | 439405  | 1.49          | 2.97             | 0.01       | 14656          |
-
-<!-- NOIR_STATS_END -->
-
-## Galaxy A54 5G
-
-Here's the benchmarking for the **proof generation** on a Galaxy A54 5G. All times are in seconds.
-
-| Noir test            | Average of 100 runs [s] | Best [s] | Worst [s] |
-| -------------------- | ----------------------- | -------- | --------- |
-| c03_holder_binding   | 1.975                   | 1.841    | 2.176     |
-| c04_issuer_signature | 2.428                   | 2.073    | 2.821     |
-| c05_age_verification | 0.314                   | 0.258    | 0.381     |
-| c06_non_revocation   | 2.645                   | 2.109    | 3.016     |
-| c09_full_proof       | 6.483                   | 5.643    | 6.940     |
-
-# Future Work
-
-For the second half of our grant, we will work together with
-our partners to get feedback on these PoCs.
-If they validate the approach, we will work on improving the
-proving system from Noir to tilt the balance away from
-long proving time to longer verification time.
-
 # CHANGELOG
+
+- 2026/05
+
+- Adding d11_sicpa_backend for integration in new backend
+- Added android mobile benchmarks from [zkp-android](https://github.com/eid-privacy/zkp-android)
 
 - 2026/04
 
