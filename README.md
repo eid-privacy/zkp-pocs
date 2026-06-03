@@ -166,12 +166,13 @@ All times are in seconds.
 
 | Noir test            | acir  | circuit | create_vk [s] | create_proof [s] | verify [s] | proof_size [B] |
 | -------------------- | ----- | ------- | ------------- | ---------------- | ---------- | -------------- |
-| c03_holder_binding   | 2108  | 74682   | 0.21          | 0.64             | 0.01       | 14656          |
-| c04_issuer_signature | 535   | 89039   | 0.37          | 0.75             | 0.01       | 14656          |
-| c05_age_verification | 285   | 3227    | 0.02          | 0.09             | 0.01       | 14656          |
-| c06_non_revocation   | 1011  | 86305   | 0.31          | 0.70             | 0.01       | 14656          |
-| c09_full_proof       | 3211  | 242000  | 0.65          | 1.41             | 0.01       | 14656          |
-| d10_swiyu_jwt        | 92811 | 453007  | 1.26          | 2.66             | 0.01       | 14656          |
+| c03_holder_binding   | 2108  | 74682   | 0.25          | 0.72             | 0.01       | 14656          |
+| c04_issuer_signature | 535   | 89039   | 0.38          | 0.88             | 0.01       | 14656          |
+| c05_age_verification | 285   | 3227    | 0.02          | 0.10             | 0.01       | 14656          |
+| c06_non_revocation   | 1011  | 86305   | 0.37          | 0.85             | 0.01       | 14656          |
+| c09_full_proof       | 3211  | 242000  | 0.81          | 1.71             | 0.01       | 14656          |
+| d10_swiyu_jwt        | 92811 | 453007  | 1.55          | 3.10             | 0.01       | 14656          |
+| d11_sicpa_backend    | 79719 | 439405  | 1.49          | 2.97             | 0.01       | 14656          |
 
 <!-- NOIR_STATS_END -->
 
@@ -179,13 +180,13 @@ All times are in seconds.
 
 Here's the benchmarking for the **proof generation** on a Galaxy A54 5G. All times are in seconds.
 
-| Noir test                   | Average of 100 runs [s] | Best [s]  | Worst [s] |
-|-----------------------------|-------------------------|------ ----|-----------|
-| c03_holder_binding          | 1.975                   | 1.841     | 2.176     |
-| c04_issuer_signature        | 2.428                   | 2.073     | 2.821     |
-| c05_age_verification        | 0.314                   | 0.258     | 0.381     |
-| c06_non_revocation          | 2.645                   | 2.109     | 3.016     |
-| c09_full_proof              | 6.483                   | 5.643     | 6.940     |
+| Noir test            | Average of 100 runs [s] | Best [s] | Worst [s] |
+| -------------------- | ----------------------- | -------- | --------- |
+| c03_holder_binding   | 1.975                   | 1.841    | 2.176     |
+| c04_issuer_signature | 2.428                   | 2.073    | 2.821     |
+| c05_age_verification | 0.314                   | 0.258    | 0.381     |
+| c06_non_revocation   | 2.645                   | 2.109    | 3.016     |
+| c09_full_proof       | 6.483                   | 5.643    | 6.940     |
 
 # Future Work
 
