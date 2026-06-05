@@ -99,6 +99,7 @@ Here's the benchmarking for the **proof generation** on a Galaxy A54 5G. All tim
 | c05_age_verification | 0.314                   | 0.258    | 0.381     |
 | c06_non_revocation   | 2.645                   | 2.109    | 3.016     |
 | c09_full_proof       | 6.483                   | 5.643    | 6.940     |
+| d10_swiyu_jwt        | 18.419                  | 16.154   | 21.013    |
 
 # Future Work
 
