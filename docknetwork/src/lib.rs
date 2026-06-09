@@ -1,13 +1,13 @@
 use ark_bls12_381::{Bls12_381, Fr as BlsFr, G1Affine as BlsG1Affine};
-use ark_ec::{AffineRepr, CurveGroup, short_weierstrass::Affine};
+use ark_ec::{short_weierstrass::Affine, AffineRepr, CurveGroup};
 use ark_ff::PrimeField;
 use ark_secp256r1::{Affine as SecP256Affine, Fq, Fr as SecP256Fr};
 use ark_serialize::{CanonicalSerialize, Compress, SerializationError};
 use ark_std::{
-    UniformRand,
     io::Write,
-    rand::{RngCore, SeedableRng, rngs::StdRng},
+    rand::{rngs::StdRng, RngCore, SeedableRng},
     vec::Vec,
+    UniformRand,
 };
 use base64::prelude::*;
 use bbs_plus::{
@@ -22,11 +22,11 @@ use chrono::TimeZone;
 use dock_crypto_utils::{
     commitment::PedersenCommitmentKey,
     signature::MessageOrBlinding,
-    transcript::{Transcript, new_merlin_transcript},
+    transcript::{new_merlin_transcript, Transcript},
 };
 use equality_across_groups::{
     ec::commitments::{
-        PointCommitment, PointCommitmentWithOpening, from_base_field_to_scalar_field,
+        from_base_field_to_scalar_field, PointCommitment, PointCommitmentWithOpening,
     },
     eq_across_groups::ProofLargeWitness,
     pok_ecdsa_pubkey::{
@@ -37,26 +37,26 @@ use equality_across_groups::{
 pub use kvac::bbs_sharp::ecdsa;
 use proof_system::{
     prelude::{
-        EqualWitnesses, MetaStatement, MetaStatements, Witness, WitnessRef, Witnesses,
         bbs_plus::{PoKBBSSignatureG1Prover, PoKBBSSignatureG1Verifier},
+        EqualWitnesses, MetaStatement, MetaStatements, Witness, WitnessRef, Witnesses,
     },
     proof::Proof,
     proof_spec::ProofSpec,
     statement::{
-        Statements,
         accumulator::cdh::{
             KBUniversalAccumulatorNonMembershipCDHProver,
             KBUniversalAccumulatorNonMembershipCDHVerifier,
         },
         bound_check_bpp::BoundCheckBpp,
         ped_comm::PedersenCommitment as PedersenCommitmentStmt,
+        Statements,
     },
     witness::{KBUniNonMembership, PoKBBSSignatureG1},
 };
 use test_utils::accumulators::InMemoryState;
 use vb_accumulator::{
     kb_universal_accumulator::{
-        KBUniversalAccumulator, witness::KBUniversalAccumulatorNonMembershipWitness,
+        witness::KBUniversalAccumulatorNonMembershipWitness, KBUniversalAccumulator,
     },
     positive::Accumulator as AccumTrait,
     prelude::{Keypair as AccumKeypair, SetupParams as AccumParams},
