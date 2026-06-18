@@ -53,13 +53,13 @@
       "last_modified": "2026-02-16T02:09:13Z",
       "resolved": "github:NixOS/nixpkgs/d1c15b7d5806069da59e819999d70e1cec0760bf?lastModified=1771207753&narHash=sha256-b9uG8yN50DRQ6A7JdZBfzq718ryYrlmGgqkRm9OOwCE%3D"
     },
-    "github:eid-privacy/flakes#barretenberg-versions.beta_21": {
-      "last_modified": "2026-05-20T14:09:33Z",
-      "resolved": "github:eid-privacy/flakes/c3c5e6d5c7658ac53f1dbc3ce7f9d60ce99467da?lastModified=1779286173&narHash=sha256-4Z%2FauDh5oAAyI739S%2FaZ0qJHcjghCFu2KyOcrWGeaWI%3D#barretenberg-versions.beta_21"
+    "github:eid-privacy/flakes#barretenberg-versions.beta_8": {
+      "last_modified": "2026-06-18T07:04:49Z",
+      "resolved": "github:eid-privacy/flakes/3c73309ebe2e4c372835fddd80ab7f41c7b8b213?lastModified=1781766289&narHash=sha256-0XmAMLdsztWkwEG2PfJnlPiHItFQBpbKcaYONZJcDmk%3D#barretenberg-versions.beta_8"
     },
-    "github:eid-privacy/flakes#noir-versions.v1_0_0-beta_21": {
-      "last_modified": "2026-05-20T14:09:33Z",
-      "resolved": "github:eid-privacy/flakes/c3c5e6d5c7658ac53f1dbc3ce7f9d60ce99467da?lastModified=1779286173&narHash=sha256-4Z%2FauDh5oAAyI739S%2FaZ0qJHcjghCFu2KyOcrWGeaWI%3D#noir-versions.v1_0_0-beta_21"
+    "github:eid-privacy/flakes#noir-versions.v1_0_0-beta_8": {
+      "last_modified": "2026-06-18T07:04:49Z",
+      "resolved": "github:eid-privacy/flakes/3c73309ebe2e4c372835fddd80ab7f41c7b8b213?lastModified=1781766289&narHash=sha256-0XmAMLdsztWkwEG2PfJnlPiHItFQBpbKcaYONZJcDmk%3D#noir-versions.v1_0_0-beta_8"
     },
     "gnumake@latest": {
       "last_modified": "2026-02-11T21:01:36Z",
