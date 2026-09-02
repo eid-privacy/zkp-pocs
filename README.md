@@ -85,6 +85,7 @@ All times are in seconds.
 | c09_full_proof       | 3211  | 242000  | 0.81          | 1.71             | 0.01       | 14656          |
 | d10_swiyu_jwt        | 92811 | 453007  | 1.55          | 3.10             | 0.01       | 14656          |
 | d11_sicpa_backend    | 79719 | 439405  | 1.49          | 2.97             | 0.01       | 14656          |
+| d12_patrick          | 95370 | 456527  | 1.56          | 2.97             | 0.01       | 14656          |
 
 <!-- NOIR_STATS_END -->
 
@@ -213,6 +214,10 @@ make test-remote
 The results will be stored in `noir/stats_remote_proof_times.csv`.
 
 # CHANGELOG
+
+- 2026/09/02
+
+- Added d12_patrick after a discussion with Patrick Amrein
 
 - 2026/05
 
