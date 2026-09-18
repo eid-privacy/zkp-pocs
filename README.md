@@ -30,7 +30,11 @@ The benchmark results are in the table below.
 # Implemented Proofs
 
 According to our grant, we proposed to implement the following 4
-types of proofs on the noir and docknetwork backend:
+types of proofs on the noir and docknetwork backend.
+It is to be noted that each circuit is measures only one proof and
+does not include the others.
+For example, the circuit c05 only includes the age verification, and
+does not verify the issuer signature.
 
 - WP3 (c03) - holder binding: proving that the holder can create a signature
   on the challenge sent by the verifier, which can be verified by the
