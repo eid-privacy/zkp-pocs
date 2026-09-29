@@ -217,6 +217,15 @@ make test-remote
 
 The results will be stored in `noir/stats_remote_proof_times.csv`.
 
+# Development
+
+If you develop some of these circuits, please add the following git-hook
+to your installation:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 # CHANGELOG
 
 - 2026/09/02
