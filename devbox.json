@@ -17,8 +17,7 @@
       ". $VENV_DIR/bin/activate",
       "pip install -qr noir/requirements.txt",
       "echo Ensuring npm and python packages are installed",
-      "rustup show",
-      "git config core.hooksPath .githooks"
+      "rustup show"
     ],
     "scripts": {
       "dock-all": "cd docknetwork && make all",
