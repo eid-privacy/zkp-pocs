@@ -1,5 +1,7 @@
 # Proof of Concept for Privacy-Preserving e-ID
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23694674.svg)](https://doi.org/10.5281/zenodo.23694674)
+
 This repository contains three Proof-of-Concepts (PoC) on
 how to implement privacy-preserving algorithms with
 electronic identities.
@@ -231,6 +233,11 @@ to your installation:
 ```bash
 git config core.hooksPath .githooks
 ```
+
+# How to cite
+
+Archived on Zenodo: [10.5281/zenodo.23694674](https://doi.org/10.5281/zenodo.23694674) (this DOI always resolves to the latest version).
+GitHub's "Cite this repository" button gives APA and BibTeX, from [CITATION.cff](CITATION.cff).
 
 # CHANGELOG
 
