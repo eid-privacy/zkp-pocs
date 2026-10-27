@@ -1,0 +1,48 @@
+{
+  "title": "Proofs of concept for privacy-preserving e-ID",
+  "upload_type": "software",
+  "description": "Proofs of concept for privacy-preserving e-ID: BBS signatures with Bulletproofs (docknetwork/crypto) and Noir/UltraHONK circuits for holder binding, unlinkability, predicate proofs and revocation, with benchmarks on desktop and Android. The benchmarks are the basis of the MS2 report of the grant.",
+  "creators": [
+    {
+      "name": "Gasser, Linus",
+      "affiliation": "EPFL"
+    },
+    {
+      "name": "Kulic, Darko",
+      "affiliation": "SICPA"
+    },
+    {
+      "name": "Multazzu, Luca",
+      "affiliation": "SICPA"
+    },
+    {
+      "name": "Dengler, Carine",
+      "affiliation": "EPFL"
+    }
+  ],
+  "license": "MPL-2.0",
+  "access_right": "open",
+  "keywords": [
+    "zero-knowledge proofs",
+    "anonymous credentials",
+    "BBS",
+    "Bulletproofs",
+    "Noir",
+    "UltraHONK",
+    "e-ID",
+    "benchmarks"
+  ],
+  "notes": "Funded by Innosuisse, grant 101.292 IP-ICT \"Secure and Privacy-Preserving Credentials for E-ID\", a collaboration between EPFL / C4DT and SICPA SA. Research / demo code, not for production use.",
+  "communities": [
+    {
+      "identifier": "eid-privacy"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "resource_type": "publication-report",
+      "identifier": "https://github.com/eid-privacy/zkp-reports"
+    }
+  ]
+}
