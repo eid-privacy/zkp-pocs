@@ -1,13 +1,13 @@
 # Proof of Concept for Privacy-Preserving e-ID
 
-This repository contains two Proof-of-Concepts (PoC) on
+This repository contains three Proof-of-Concepts (PoC) on
 how to implement privacy-preserving algorithms with
 electronic identities.
 It is funded by the IP-ICT 101.292 Innolink Grant on
 **Secure and Privacy-Preserving Credentials
 for E-ID**.
 You can find more information in the
-[MS2 report](https://github.com/eid-privacy/MS2-Minimal-Viable-Project/releases/download/2026-01-06_12-45/101.292-IP-ICT-ms2-report-2026-01-06_12-45.pdf).
+[MS2 report](https://github.com/eid-privacy/zkp-reports/releases/download/latest/eid_privacy-101.292-IP-ICT-ms2-report.pdf).
 
 The first PoC is created using the
 [docknetwork/crypto](https://github.com/docknetwork/crypto)
@@ -22,10 +22,16 @@ The Barretenberg backend implements a
 proof which is optimized for blockchains, but still
 fast enough for our goals.
 
-The third PoC uses noir-lang on Android with [MoPro]().
+The third PoC uses noir-lang on Android with [MoPro](https://github.com/zkmopro/mopro).
 You can find the code in the [zkp-android](https://github.com/eid-privacy/zkp-android)
 repository.
 The benchmark results are in the table below.
+
+The follow-up work, proving an unmodified SWIYU SD-JWT with a Spartan prover
+over the Tom-256 curve, is in
+[spartan-backend](https://github.com/eid-privacy/spartan-backend).
+Its results are in the
+[final report](https://github.com/eid-privacy/zkp-reports/releases/download/latest/eid_privacy-101.292-IP-ICT-ms4-report.pdf).
 
 # Implemented Proofs
 
