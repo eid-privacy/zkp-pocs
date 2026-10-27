@@ -7,7 +7,7 @@ It is funded by the IP-ICT 101.292 Innolink Grant on
 **Secure and Privacy-Preserving Credentials
 for E-ID**.
 You can find more information in the
-[MS2 report](https://github.com/eid-privacy/zkp-reports/releases/download/latest/eid_privacy-101.292-IP-ICT-ms2-report.pdf).
+[MS2 report](https://github.com/eid-privacy/zkp-reports/releases/download/latest/eid-privacy-MS2.pdf).
 
 The first PoC is created using the
 [docknetwork/crypto](https://github.com/docknetwork/crypto)
@@ -31,7 +31,7 @@ The follow-up work, proving an unmodified SWIYU SD-JWT with a Spartan prover
 over the Tom-256 curve, is in
 [spartan-backend](https://github.com/eid-privacy/spartan-backend).
 Its results are in the
-[final report](https://github.com/eid-privacy/zkp-reports/releases/download/latest/eid_privacy-101.292-IP-ICT-ms4-report.pdf).
+[final report](https://github.com/eid-privacy/zkp-reports/releases/download/latest/eid-privacy-MS4.pdf).
 
 # Implemented Proofs
 
