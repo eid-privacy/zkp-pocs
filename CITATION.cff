@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+type: software
+title: "Proofs of concept for privacy-preserving e-ID"
+authors:
+  - family-names: Gasser
+    given-names: Linus
+    affiliation: EPFL
+  - family-names: Kulic
+    given-names: Darko
+    affiliation: SICPA
+  - family-names: Multazzu
+    given-names: Luca
+    affiliation: SICPA
+  - family-names: Dengler
+    given-names: Carine
+    affiliation: EPFL
+repository-code: https://github.com/eid-privacy/zkp-pocs
+license: MPL-2.0
+abstract: >-
+  Proofs of concept for privacy-preserving e-ID: BBS signatures with Bulletproofs
+  (docknetwork/crypto) and Noir/UltraHONK circuits for holder binding, unlinkability,
+  predicate proofs and revocation, with benchmarks on desktop and Android. The benchmarks
+  are the basis of the MS2 report of the grant.
+keywords:
+  - zero-knowledge proofs
+  - anonymous credentials
+  - BBS
+  - Bulletproofs
+  - Noir
+  - UltraHONK
+  - e-ID
+  - benchmarks
